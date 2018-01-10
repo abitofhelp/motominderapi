@@ -25,7 +25,7 @@ func main() {
 			Id:    123,
 			Make:  "KTM",
 			Model: "350 EXC-F",
-			Year:  "2018",
+			Year:  2018,
 		}
 
 		// Marshal moto into JSON structure
