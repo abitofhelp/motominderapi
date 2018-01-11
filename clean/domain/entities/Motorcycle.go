@@ -1,4 +1,4 @@
-// Package motorcycle_tests implements unit tests for the Motorcycle entity.
+// Package entities implements unit tests for the Motorcycle entity.
 package entities
 
 import (
@@ -10,7 +10,7 @@ import (
 
 // Motorcycle is an entity
 type Motorcycle struct {
-	Id    int    `json:"id"`
+	ID    int    `json:"id"`
 	Make  string `json:"make"`
 	Model string `json:"model"`
 	Year  int    `json:"year"`
@@ -24,7 +24,7 @@ type Motorcycle struct {
 // Assumes that after changing values of a motorcycle,
 // Validate() will be invoked.
 
-// IsValidManufacturer verifies that a motorcycle's make is not an invalid manufacturer.
+// IsInvalidManufacturer verifies that a motorcycle's make is not an invalid manufacturer.
 // Returns nil if the manufacturer is valid, otherwise an error.
 func IsInvalidManufacturer(value interface{}) error {
 	s, _ := value.(string)
@@ -41,7 +41,7 @@ func IsInvalidManufacturer(value interface{}) error {
 func (m Motorcycle) Validate() error {
 	return validation.ValidateStruct(&m,
 		// Id must be non-zero and a positive value.
-		validation.Field(&m.Id, validation.Required, validation.Min(1)),
+		validation.Field(&m.ID, validation.Required, validation.Min(1)),
 		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)
 		validation.Field(&m.Make, validation.Required, validation.NotNil, validation.Length(1, 20), validation.By(IsInvalidManufacturer)),
 		// Model cannot be nil, cannot be empty, and max length of 20
@@ -51,12 +51,12 @@ func (m Motorcycle) Validate() error {
 	)
 }
 
-// Creates a new motorcycle
+// NewMotorcycle creates a new instance of a Motorcycle.
 // Returns nil, error when there is an error, otherwise motorcycle, nil.
 func NewMotorcycle(id int, make string, model string, year int) (*Motorcycle, error) {
 
 	motorcycle := &Motorcycle{
-		Id:    id,
+		ID:    id,
 		Make:  make,
 		Model: model,
 		Year:  year,

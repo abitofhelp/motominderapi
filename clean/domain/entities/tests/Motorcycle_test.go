@@ -1,5 +1,5 @@
-// Package motorcycle_tests implements unit tests for the Motorcycle entity.
-package motorcycle_tests
+// Package motorcycleTests implements unit tests for the Motorcycle entity.
+package motorcycleTests
 
 import (
 	"testing"

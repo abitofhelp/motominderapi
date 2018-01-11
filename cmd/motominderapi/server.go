@@ -22,7 +22,7 @@ func main() {
 	router.GET("/motorcycles", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		// A motorcycle
 		moto := entities.Motorcycle{
-			Id:    123,
+			ID:    123,
 			Make:  "KTM",
 			Model: "350 EXC-F",
 			Year:  2018,
