@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+// nextID is the next primary key ID value for an object being inserted into the repository.
+var nextID = 0
+
 // MotorcycleRepository provides CRUD operations against a collection of motorcycles.
 type MotorcycleRepository struct {
 	// These items are unordered.
@@ -43,37 +46,52 @@ func (repo MotorcycleRepository) List() ([]entities.Motorcycle, error) {
 
 // Insert adds a motorcycle to the repository.
 // Do not permit duplicate ID values.
-// Returns nil on success, otherwise an error.
-func (repo *MotorcycleRepository) Insert(motorcycle *entities.Motorcycle) error {
+// Returns the new motorcycle entity, nil on success, otherwise nil, error.
+func (repo *MotorcycleRepository) Insert(motorcycle *entities.Motorcycle) (*entities.Motorcycle, error) {
 
 	// Determine whether the motorcycle already exists in the repository.
 	_, err := repo.findByID(motorcycle.ID)
 	if err == nil {
-		return errors.New("cannot insert this motorcycle because the ID already exists")
+		return nil, errors.New("cannot insert this motorcycle because the ID already exists")
 	}
 
 	// Save the time when this entity was created in the repository.
+	motorcycle.ID = repo.GetNextID()
 	motorcycle.CreatedUtc = time.Now().UTC()
+
+	// Validate the object
+	err = motorcycle.Validate()
+	if err != nil {
+		return nil, err
+	}
+
 	repo.Motorcycles = append(repo.Motorcycles, *motorcycle)
 
-	return nil
+	return motorcycle, nil
 }
 
 // Update replaces a motorcycle an existing motorcycle in the repository.
 // If the motorcycle does not exist, an error is returned.
 // Returns nil on success, otherwise an error.
-func (repo *MotorcycleRepository) Update(motorcycle *entities.Motorcycle) error {
+func (repo *MotorcycleRepository) Update(motorcycle *entities.Motorcycle) (*entities.Motorcycle, error) {
 	// Find the motorcycle, so it can be updated in the repository.
 	i, err := repo.findByID(motorcycle.ID)
 	if err != nil {
-		return errors.New("cannot update a motorcycle that does not exist")
+		return nil, errors.New("cannot update a motorcycle that does not exist")
 	}
 
 	// Save the time when this entity was updated in the repository.
 	motorcycle.ModifiedUtc = time.Now().UTC()
+
+	// Validate the object
+	err = motorcycle.Validate()
+	if err != nil {
+		return nil, err
+	}
+
 	repo.Motorcycles[i] = *motorcycle
 
-	return nil
+	return motorcycle, nil
 
 }
 
@@ -147,4 +165,11 @@ func (repo *MotorcycleRepository) removeIndex(index int) []entities.Motorcycle {
 // Returns nil on success, otherwise an error.
 func (repo *MotorcycleRepository) Save() error {
 	return nil
+}
+
+// GetNextID determines the next primary key ID value when an item is inserted into the repository.
+// Returns the next ID.
+func (repo *MotorcycleRepository) GetNextID() int {
+	nextID = nextID + 1
+	return nextID
 }

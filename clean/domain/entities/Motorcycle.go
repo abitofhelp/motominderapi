@@ -39,8 +39,6 @@ func IsInvalidManufacturer(value interface{}) error {
 // Validate verifies that a motorcycle's fields contain valid data that satisfies business rules.
 // Returns nil if the motorcycle contains valid data, otherwise an error.
 func (m Motorcycle) Validate() error {
-	createdUtcAsUnixNano := (&m.CreatedUtc).UnixNano()
-
 	return validation.ValidateStruct(&m,
 		// Id must be non-zero and a positive value.
 		validation.Field(&m.ID, validation.Required, validation.Min(1)),
@@ -50,10 +48,6 @@ func (m Motorcycle) Validate() error {
 		validation.Field(&m.Model, validation.Required, validation.Length(1, 20)),
 		// Year must be between 1999 and 2020, inclusive.
 		validation.Field(&m.Year, validation.Required, validation.Min(1999), validation.Max(2020)),
-		// CreatedUtc cannot be nil, and it must be treated as an immutable value after assignment.
-		validation.Field(&m.CreatedUtc, validation.Required),
-		// ModifiedUtc cannot be on or before CreatedUtc.
-		validation.Field(&m.ModifiedUtc, validation.Min(createdUtcAsUnixNano+1)),
 	)
 }
 
@@ -69,6 +63,7 @@ func NewMotorcycle(id int, make string, model string, year int) (*Motorcycle, er
 		// CreatedUtc: Set when an instance is created in the repository.
 		// ModifiedUtc: Set when an instance is updated in the repository.
 	}
+
 	err := motorcycle.Validate()
 	if err != nil {
 		return nil, err
