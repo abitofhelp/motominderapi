@@ -4,11 +4,15 @@ package repositories
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/entities"
 
+	"errors"
 	"github.com/go-ozzo/ozzo-validation"
+	"sort"
+	"time"
 )
 
 // MotorcycleRepository provides CRUD operations against a collection of motorcycles.
 type MotorcycleRepository struct {
+	// These items are unordered.
 	Motorcycles []entities.Motorcycle `json:"motorcycles"`
 }
 
@@ -26,42 +30,121 @@ func NewMotorcycleRepository() (*MotorcycleRepository, error) {
 }
 
 // Validate tests that a motorcycle repository is valid.
-// Returns nil on success, otherwise and error.
+// Returns nil on success, otherwise an error.
 func (repo MotorcycleRepository) Validate() error {
 	return validation.ValidateStruct(&repo)
 }
 
-// List gets the list of motorcycles in the repository.
+// List gets the unordered list of motorcycles in the repository.
 // Returns the list of motorcycles, or an error.
 func (repo MotorcycleRepository) List() ([]entities.Motorcycle, error) {
 	return repo.Motorcycles, nil
 }
 
 // Insert adds a motorcycle to the repository.
-// Returns nil on success, otherwise and error.
+// Do not permit duplicate ID values.
+// Returns nil on success, otherwise an error.
 func (repo *MotorcycleRepository) Insert(motorcycle *entities.Motorcycle) error {
-	repo.Motorcycles = append(repo.Motorcycles, *motorcycle)
-	return nil
-}
 
-/*
-
-func Delete(repo interfaces.IMotorcycleRepository, motorcycle entities.Motorcycle) error {
-	return nil
-}
-
-func FindById(repo interfaces.IMotorcycleRepository, id uint64) entities.Motorcycle {
-	moto := entities.Motorcycle{
-		Id:    123,
-		Make:  "KTM",
-		Model: "350 EXC-F",
-		Year:  2018,
+	// Determine whether the motorcycle already exists in the repository.
+	_, err := repo.findByID(motorcycle.ID)
+	if err == nil {
+		return errors.New("cannot insert this motorcycle because the ID already exists")
 	}
-numbers = append(numbers, 1)
-	return moto
-}
 
-func Save(repo interfaces.IMotorcycleRepository, motorcycle entities.Motorcycle) error {
+	// Save the time when this entity was created in the repository.
+	motorcycle.CreatedUtc = time.Now().UTC()
+	repo.Motorcycles = append(repo.Motorcycles, *motorcycle)
+
 	return nil
 }
-*/
+
+// Update replaces a motorcycle an existing motorcycle in the repository.
+// If the motorcycle does not exist, an error is returned.
+// Returns nil on success, otherwise an error.
+func (repo *MotorcycleRepository) Update(motorcycle *entities.Motorcycle) error {
+	// Find the motorcycle, so it can be updated in the repository.
+	i, err := repo.findByID(motorcycle.ID)
+	if err != nil {
+		return errors.New("cannot update a motorcycle that does not exist")
+	}
+
+	// Save the time when this entity was updated in the repository.
+	motorcycle.ModifiedUtc = time.Now().UTC()
+	repo.Motorcycles[i] = *motorcycle
+
+	return nil
+
+}
+
+// findByID a motorcycle in the repository using its primary key, ID.
+// Returns its index on success, otherwise an index of -1 and an error.
+func (repo *MotorcycleRepository) findByID(id int) (int, error) {
+	// Sort the list of motorcycles by id.
+	i := sort.Search(len(repo.Motorcycles), func(i int) bool {
+		return repo.Motorcycles[i].ID < id
+	})
+	if i < len(repo.Motorcycles) && repo.Motorcycles[i].ID == id {
+		// Found the motorcycle
+		return i, nil
+	}
+
+	// Motorcycle was not found.
+	return -1, errors.New("motorcycle was not found, so it cannot be updated")
+}
+
+//FindByID a motorcycle in the repository using its primary key, ID.
+// Returns nil on success, otherwise an error.
+func (repo *MotorcycleRepository) FindByID(id int) (*entities.Motorcycle, error) {
+
+	// Try to find the index for the motorcycle in the repository.
+	i, err := repo.findByID(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Motorcycle was found.
+	return &repo.Motorcycles[i], nil
+}
+
+// Find a motorcycle in the repository.
+// Returns nil on success, otherwise an error.
+func (repo *MotorcycleRepository) Find(motorcycle *entities.Motorcycle) (*entities.Motorcycle, error) {
+	// Sort the list of motorcycles by make, model, and year.
+	i := sort.Search(len(repo.Motorcycles), func(i int) bool {
+		return repo.Motorcycles[i].Make < motorcycle.Make && repo.Motorcycles[i].Model < motorcycle.Model && repo.Motorcycles[i].Year < motorcycle.Year
+	})
+	if i < len(repo.Motorcycles) && repo.Motorcycles[i] == *motorcycle {
+		// Found the motorcycle
+		return &repo.Motorcycles[i], nil
+	}
+
+	// Motorcycle was not found.
+	return nil, errors.New("motorcycle was not found, so it cannot be updated")
+}
+
+// Delete an existing motorcycle from the repository.
+// If the motorcycle does not exist, an error is returned.
+// Returns nil on success, otherwise an error.
+func (repo *MotorcycleRepository) Delete(motorcycle *entities.Motorcycle) error {
+	// Find the motorcycle, so it can be deleted from the repository.
+	i, err := repo.findByID(motorcycle.ID)
+	if err != nil {
+		return errors.New("cannot delete a motorcycle that does not exist")
+	}
+
+	repo.removeIndex(i)
+
+	return nil
+}
+
+func (repo *MotorcycleRepository) removeIndex(index int) []entities.Motorcycle {
+	return append(repo.Motorcycles[:index], repo.Motorcycles[index+1:]...)
+}
+
+// Save all of the changes to the repository (assuming some kind of unit of work/dbContext).
+// Returns nil on success, otherwise an error.
+func (repo *MotorcycleRepository) Save() error {
+	return nil
+}

@@ -6,17 +6,17 @@ import (
 	"strings"
 
 	"github.com/go-ozzo/ozzo-validation"
+	"time"
 )
 
 // Motorcycle is an entity
 type Motorcycle struct {
-	ID    int    `json:"id"`
-	Make  string `json:"make"`
-	Model string `json:"model"`
-	Year  int    `json:"year"`
-	//createdUtc  time.Time `json:"createdUtc"`
-	//deletedUtc  time.Time `json:"deletedUtc"`
-	//modifiedUtc time.Time `json:"modifiedUtc"`
+	ID          int       `json:"id"`
+	Make        string    `json:"make"`
+	Model       string    `json:"model"`
+	Year        int       `json:"year"`
+	CreatedUtc  time.Time `json:"createdUtc"`
+	ModifiedUtc time.Time `json:"modifiedUtc"`
 	//rowVersion  []byte    `json:"rowVersion"`
 }
 
@@ -39,15 +39,21 @@ func IsInvalidManufacturer(value interface{}) error {
 // Validate verifies that a motorcycle's fields contain valid data that satisfies business rules.
 // Returns nil if the motorcycle contains valid data, otherwise an error.
 func (m Motorcycle) Validate() error {
+	createdUtcAsUnixNano := (&m.CreatedUtc).UnixNano()
+
 	return validation.ValidateStruct(&m,
 		// Id must be non-zero and a positive value.
 		validation.Field(&m.ID, validation.Required, validation.Min(1)),
 		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)
-		validation.Field(&m.Make, validation.Required, validation.NotNil, validation.Length(1, 20), validation.By(IsInvalidManufacturer)),
+		validation.Field(&m.Make, validation.Required, validation.Length(1, 20), validation.By(IsInvalidManufacturer)),
 		// Model cannot be nil, cannot be empty, and max length of 20
-		validation.Field(&m.Model, validation.Required, validation.NotNil, validation.Length(1, 20)),
+		validation.Field(&m.Model, validation.Required, validation.Length(1, 20)),
 		// Year must be between 1999 and 2020, inclusive.
 		validation.Field(&m.Year, validation.Required, validation.Min(1999), validation.Max(2020)),
+		// CreatedUtc cannot be nil, and it must be treated as an immutable value after assignment.
+		validation.Field(&m.CreatedUtc, validation.Required),
+		// ModifiedUtc cannot be on or before CreatedUtc.
+		validation.Field(&m.ModifiedUtc, validation.Min(createdUtcAsUnixNano+1)),
 	)
 }
 
@@ -60,6 +66,8 @@ func NewMotorcycle(id int, make string, model string, year int) (*Motorcycle, er
 		Make:  make,
 		Model: model,
 		Year:  year,
+		// CreatedUtc: Set when an instance is created in the repository.
+		// ModifiedUtc: Set when an instance is updated in the repository.
 	}
 	err := motorcycle.Validate()
 	if err != nil {
