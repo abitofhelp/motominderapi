@@ -1,4 +1,4 @@
-# motominderapi
+# motominder API
 
 # Background
 I have a long history using variants of the C programming language, and the similarities between C and Go spiked my interest in the latter.  I am a staunch advocate for test driven development and Uncle Bob's Screaming Clean Architecture.  During my sebatical between contracted software assignments, I decided to create a web service in Go that will record the maintenance events and suggest required services for a fleet of motorcycles.  Since the vast majority of the operations will manipulate textual JSON objects, a RESTful web service will be created.  
