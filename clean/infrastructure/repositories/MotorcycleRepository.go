@@ -25,7 +25,7 @@ type MotorcycleRepository struct {
 // NewMotorcycleRepository creates a new instance of a MotorcycleRepository.
 // Returns 'nil, error' when there is an error, otherwise a 'MotorcycleRepository, nil'.
 func NewMotorcycleRepository() (*MotorcycleRepository, error) {
-	motorcycleRepository := &MotorcycleRepository{ Motorcycles: make([]entities.Motorcycle, 10)}
+	motorcycleRepository := &MotorcycleRepository{}
 	err := motorcycleRepository.Validate()
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (repo *MotorcycleRepository) Insert(motorcycle *entities.Motorcycle) (*enti
 	}
 
 	// Save the time when this entity was created in the repository.
-	motorcycle.ID = repo.GetNextID()
+	motorcycle.ID = repo.getNextID()
 	motorcycle.CreatedUtc = time.Now().UTC()
 
 	// Validate the object
@@ -92,7 +92,7 @@ func (repo *MotorcycleRepository) Update(motorcycle *entities.Motorcycle) (*enti
 		return nil, err
 	}
 
-	&repo.Motorcycles[i] = motorcycle
+	repo.Motorcycles[i] = *motorcycle
 
 	return motorcycle, nil
 
@@ -101,11 +101,13 @@ func (repo *MotorcycleRepository) Update(motorcycle *entities.Motorcycle) (*enti
 // findByID a motorcycle in the repository using its primary key, ID.
 // Returns its index on success, otherwise an index of -1 and an error.
 func (repo *MotorcycleRepository) findByID(id int) (int, error) {
-	// Sort the list of motorcycles by id.
+	// Sort the list of motorcycles by id and find the index to the motorcycle.
+	// The result is the slice index for the single element or -1.
 	i := sort.Search(len(repo.Motorcycles), func(i int) bool {
-		return repo.Motorcycles[i].ID < id
+		return repo.Motorcycles[i].ID >= id
 	})
-	if i <= len(repo.Motorcycles) && repo.Motorcycles[i].ID == id {
+
+	if i < len(repo.Motorcycles) && repo.Motorcycles[i].ID == id {
 		// Found the motorcycle
 		return i, nil
 	}
@@ -134,9 +136,10 @@ func (repo *MotorcycleRepository) FindByID(id int) (*entities.Motorcycle, error)
 func (repo *MotorcycleRepository) Find(motorcycle *entities.Motorcycle) (*entities.Motorcycle, error) {
 	// Sort the list of motorcycles by make, model, and year.
 	i := sort.Search(len(repo.Motorcycles), func(i int) bool {
-		return repo.Motorcycles[i].Make < motorcycle.Make && repo.Motorcycles[i].Model < motorcycle.Model && repo.Motorcycles[i].Year < motorcycle.Year
+		return repo.Motorcycles[i].Make >= motorcycle.Make && repo.Motorcycles[i].Model >= motorcycle.Model && repo.Motorcycles[i].Year >= motorcycle.Year
 	})
-	if i <= len(repo.Motorcycles) && repo.Motorcycles[i] == *motorcycle {
+
+	if i < len(repo.Motorcycles) && repo.Motorcycles[i].ID == motorcycle.ID {
 		// Found the motorcycle
 		return &repo.Motorcycles[i], nil
 	}
@@ -149,13 +152,13 @@ func (repo *MotorcycleRepository) Find(motorcycle *entities.Motorcycle) (*entiti
 // If the motorcycle does not exist, an error is returned.
 // Returns nil on success, otherwise an error.
 func (repo *MotorcycleRepository) Delete(motorcycle *entities.Motorcycle) error {
-	// Find the motorcycle, so it can be deleted from the repository.
+	// Find the motorcycle, so it can be updated in the repository.
 	i, _ := repo.findByID(motorcycle.ID)
 	if i == kPrimaryKeyID_DoesNotExist {
 		return errors.New("cannot delete a motorcycle that does not exist")
 	}
 
-	repo.removeIndex(i)
+	repo.Motorcycles = repo.removeIndex(i)
 
 	return nil
 }
@@ -172,7 +175,7 @@ func (repo *MotorcycleRepository) Save() error {
 
 // GetNextID determines the next primary key ID value when an item is inserted into the repository.
 // Returns the next ID.
-func (repo *MotorcycleRepository) GetNextID() int {
+func (repo *MotorcycleRepository) getNextID() int {
 	nextID = nextID + 1
 	return nextID
 }

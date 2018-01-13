@@ -40,8 +40,6 @@ func IsInvalidManufacturer(value interface{}) error {
 // Returns nil if the motorcycle contains valid data, otherwise an error.
 func (m Motorcycle) Validate() error {
 	return validation.ValidateStruct(&m,
-		// Id must be non-zero and a positive value.
-		validation.Field(&m.ID, validation.Required, validation.Min(1)),
 		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)
 		validation.Field(&m.Make, validation.Required, validation.Length(1, 20), validation.By(IsInvalidManufacturer)),
 		// Model cannot be nil, cannot be empty, and max length of 20
@@ -53,10 +51,10 @@ func (m Motorcycle) Validate() error {
 
 // NewMotorcycle creates a new instance of a Motorcycle.
 // Returns nil, error when there is an error, otherwise motorcycle, nil.
-func NewMotorcycle(id int, make string, model string, year int) (*Motorcycle, error) {
+func NewMotorcycle(make string, model string, year int) (*Motorcycle, error) {
 
 	motorcycle := &Motorcycle{
-		ID:    id,
+		ID:    0,
 		Make:  make,
 		Model: model,
 		Year:  year,

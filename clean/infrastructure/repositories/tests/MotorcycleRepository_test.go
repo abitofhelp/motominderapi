@@ -20,6 +20,7 @@ func TestMotorcycleRepository_ListEmpty(t *testing.T) {
 	// ASSERT
 	assert.True(t, len(repo.Motorcycles) == 0)
 }
+
 // TestMotorcycleRepository_ListOfOne verifies that a list with one motorcycle is returned.
 func TestMotorcycleRepository_ListOfOne(t *testing.T) {
 
@@ -27,7 +28,8 @@ func TestMotorcycleRepository_ListOfOne(t *testing.T) {
 
 	// ACT
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle(1, "Honda", "Shadow", 2006)
+
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
 	repo.Insert(motorcycle)
 
 	// ASSERT
@@ -39,7 +41,7 @@ func TestMotorcycleRepository_Insert(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle(1, "Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
 
 	// ACT
 	moto, _ := repo.Insert(motorcycle)
@@ -49,30 +51,55 @@ func TestMotorcycleRepository_Insert(t *testing.T) {
 	assert.True(t, *moto == repo.Motorcycles[0])
 }
 
+// TestMotorcycleRepository_Insert verifies that an insert is successful.
+func TestMotorcycleRepository_Insert_IDAlreadyExists(t *testing.T) {
+
+	// ARRANGE
+	repo, _ := repositories.NewMotorcycleRepository()
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+
+	// ACT
+	moto, err := repo.Insert(motorcycle)
+	_, err = repo.Insert(moto)
+
+	// ASSERT
+	assert.NotNil(t, err)
+}
+
 // TestMotorcycleRepository_FindByID verifies that an insert is successful.
 func TestMotorcycleRepository_FindByID(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle(1, "Honda", "Shadow", 2006)
-	moto, _:= repo.Insert(motorcycle)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	moto, _ := repo.Insert(motorcycle)
 
 	// ACT
-	_, err := repo.FindByID(moto.ID)
-	println(err)
+	foundMoto, _ := repo.FindByID(moto.ID)
 
 	// ASSERT
-	//assert.NotNil(t, foundMoto)
-	//assert.True(t, moto.ID == foundMoto.ID)
+	assert.True(t, moto.ID == foundMoto.ID)
 }
 
+// TestMotorcycleRepository_FindByID verifies that an insert is successful.
+func TestMotorcycleRepository_FindByID_NotExist(t *testing.T) {
+
+	// ARRANGE
+	repo, _ := repositories.NewMotorcycleRepository()
+
+	// ACT
+	foundMoto, _ := repo.FindByID(123)
+
+	// ASSERT
+	assert.Nil(t, foundMoto)
+}
 
 // TestMotorcycleRepository_Update verifies that an update is successful.
 func TestMotorcycleRepository_Update(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle(1, "Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
 	moto, _ := repo.Insert(motorcycle)
 	moto.Make = "Harley Davidson"
 
@@ -81,4 +108,64 @@ func TestMotorcycleRepository_Update(t *testing.T) {
 
 	// ASSERT
 	assert.True(t, repo.Motorcycles[0].Make == "Harley Davidson")
+}
+
+// TestMotorcycleRepository_Update_NotExist verifies that an update
+// fails if the entity does not exist.
+func TestMotorcycleRepository_Update_NotExist(t *testing.T) {
+
+	// ARRANGE
+	repo, _ := repositories.NewMotorcycleRepository()
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle.ID = 123
+
+	// ACT
+	foundMoto, _ := repo.Update(motorcycle)
+
+	// ASSERT
+	assert.Nil(t, foundMoto)
+}
+
+// TestMotorcycleRepository_Delete verifies that a delete is successful.
+func TestMotorcycleRepository_Delete(t *testing.T) {
+
+	// ARRANGE
+	repo, _ := repositories.NewMotorcycleRepository()
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	moto, _ := repo.Insert(motorcycle)
+
+	// ACT
+	repo.Delete(moto)
+
+	// ASSERT
+	assert.True(t, len(repo.Motorcycles) == 0)
+}
+
+// TestMotorcycleRepository_Delete_NotExist verifies that a delete
+// fails if the entity does not exist.
+func TestMotorcycleRepository_Delete_NotExist(t *testing.T) {
+
+	// ARRANGE
+	repo, _ := repositories.NewMotorcycleRepository()
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle.ID = 123
+
+	// ACT
+	err := repo.Delete(motorcycle)
+
+	// ASSERT
+	assert.NotNil(t, err)
+}
+
+// TestMotorcycleRepository_Save verifies that a save of the unit of work/dbContext is successful.
+func TestMotorcycleRepository_Save(t *testing.T) {
+
+	// ARRANGE
+	repo, _ := repositories.NewMotorcycleRepository()
+
+	// ACT
+	err := repo.Save()
+
+	// ASSERT
+	assert.Nil(t, err)
 }

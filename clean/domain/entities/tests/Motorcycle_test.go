@@ -14,7 +14,7 @@ func TestMotorcycleMake_FordIsInvalid(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "Ford", "Falcon", 2006)
+	_, err := entities.NewMotorcycle("Ford", "Falcon", 2006)
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -26,7 +26,7 @@ func TestMotorcycleMake_HondaIsValid(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "Honda", "Shadow", 2006)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 2006)
 
 	// ASSERT
 	assert.Nil(t, err)
@@ -38,7 +38,7 @@ func TestMotorcycleMake_NotEmpty(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "", "Falcon", 2006)
+	_, err := entities.NewMotorcycle("", "Falcon", 2006)
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -50,7 +50,7 @@ func TestMotorcycleMake_LengthLTE20(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "0123456789012345678901234", "Falcon", 2006)
+	_, err := entities.NewMotorcycle("0123456789012345678901234", "Falcon", 2006)
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -62,7 +62,7 @@ func TestMotorcycleModel_NotEmpty(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "Honda", "", 2006)
+	_, err := entities.NewMotorcycle("Honda", "", 2006)
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -74,7 +74,7 @@ func TestMotorcycleModel_LengthLTE20(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "Honda", "0123456789012345678901234", 2006)
+	_, err := entities.NewMotorcycle("Honda", "0123456789012345678901234", 2006)
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -86,7 +86,7 @@ func TestMotorcycleYear_LT1999(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "Honda", "Shadow", 1998)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 1998)
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -98,7 +98,7 @@ func TestMotorcycleYear_1999(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "Honda", "Shadow", 1999)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 1999)
 
 	// ASSERT
 	assert.Nil(t, err)
@@ -110,7 +110,7 @@ func TestMotorcycleYear_2020(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "Honda", "Shadow", 2020)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 2020)
 
 	// ASSERT
 	assert.Nil(t, err)
@@ -122,7 +122,7 @@ func TestMotorcycleYear_GT2020(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle(1, "Honda", "Shadow", 2021)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 2021)
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -133,7 +133,7 @@ func TestMotorcycleYear_GT2020(t *testing.T) {
 func TestMotorcycle_ChangeFieldValueAndValidate_Successful(t *testing.T) {
 
 	// ARRANGE
-	motorcycle, err := entities.NewMotorcycle(1, "Honda", "Shadow", 2006)
+	motorcycle, err := entities.NewMotorcycle("Honda", "Shadow", 2006)
 	motorcycle.Year = 2007
 
 	// ACT
@@ -148,7 +148,7 @@ func TestMotorcycle_ChangeFieldValueAndValidate_Successful(t *testing.T) {
 func TestMotorcycle_ChangeFieldValueAndValidate_Failure(t *testing.T) {
 
 	// ARRANGE
-	motorcycle, err := entities.NewMotorcycle(1, "Honda", "Shadow", 2006)
+	motorcycle, err := entities.NewMotorcycle("Honda", "Shadow", 2006)
 	motorcycle.Year = 3000
 
 	// ACT
