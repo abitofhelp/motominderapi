@@ -2,10 +2,22 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/abitofhelp/motominderapi"
+  packages = ["clean/domain/entities","clean/infrastructure/repositories"]
+  revision = "33aa9708ba553107e581ae7ca4df973fb6f252e9"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/go-ozzo/ozzo-validation"
+  packages = ["."]
+  revision = "85dcd8368eba387e65a03488b003e233994e87e9"
+  version = "v3.3"
 
 [[projects]]
   name = "github.com/julienschmidt/httprouter"
@@ -21,17 +33,13 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = [
-    "assert",
-    "require",
-    "suite"
-  ]
+  packages = ["assert"]
   revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
   version = "v1.2.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2f6084727a77626eb82679265522813afb1778c3a20453840444a2dd6ad897cc"
+  inputs-digest = "f69c2e486c8302b9a40fa8632f2c45df4f744938d617cb5bbf2e02aa18bd223c"
   solver-name = "gps-cdcl"
   solver-version = 1
