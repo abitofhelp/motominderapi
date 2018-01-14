@@ -1,5 +1,5 @@
 // Package responsemodels contains the response models for each use case/interactor.
-package responsemodels
+package responsemessages
 
 import "github.com/go-ozzo/ozzo-validation"
 

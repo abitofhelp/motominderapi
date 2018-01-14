@@ -1,5 +1,5 @@
 // Package requestmodels contains the request models for each use case/interactor.
-package requestmodels
+package requestmessages
 
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/entities"
