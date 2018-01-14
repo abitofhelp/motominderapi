@@ -14,7 +14,7 @@ func TestMotorcycleMake_FordIsInvalid(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("Ford", "Falcon", 2006)
+	_, err := entities.NewMotorcycle("Ford", "Falcon", 2006, "01234567890123456")
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -26,7 +26,7 @@ func TestMotorcycleMake_HondaIsValid(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 
 	// ASSERT
 	assert.Nil(t, err)
@@ -38,7 +38,7 @@ func TestMotorcycleMake_NotEmpty(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("", "Falcon", 2006)
+	_, err := entities.NewMotorcycle("", "Falcon", 2006, "01234567890123456")
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -50,7 +50,7 @@ func TestMotorcycleMake_LengthLTE20(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("0123456789012345678901234", "Falcon", 2006)
+	_, err := entities.NewMotorcycle("0123456789012345678901234", "Falcon", 2006, "01234567890123456")
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -62,7 +62,7 @@ func TestMotorcycleModel_NotEmpty(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("Honda", "", 2006)
+	_, err := entities.NewMotorcycle("Honda", "", 2006, "01234567890123456")
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -74,7 +74,7 @@ func TestMotorcycleModel_LengthLTE20(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("Honda", "0123456789012345678901234", 2006)
+	_, err := entities.NewMotorcycle("Honda", "0123456789012345678901234", 2006, "01234567890123456")
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -86,7 +86,7 @@ func TestMotorcycleYear_LT1999(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("Honda", "Shadow", 1998)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 1998, "01234567890123456")
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -98,7 +98,7 @@ func TestMotorcycleYear_1999(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("Honda", "Shadow", 1999)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 1999, "01234567890123456")
 
 	// ASSERT
 	assert.Nil(t, err)
@@ -110,7 +110,7 @@ func TestMotorcycleYear_2020(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("Honda", "Shadow", 2020)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 2020, "01234567890123456")
 
 	// ASSERT
 	assert.Nil(t, err)
@@ -122,7 +122,7 @@ func TestMotorcycleYear_GT2020(t *testing.T) {
 	// ARRANGE
 
 	// ACT
-	_, err := entities.NewMotorcycle("Honda", "Shadow", 2021)
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 2021, "01234567890123456")
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -133,7 +133,7 @@ func TestMotorcycleYear_GT2020(t *testing.T) {
 func TestMotorcycle_ChangeFieldValueAndValidate_Successful(t *testing.T) {
 
 	// ARRANGE
-	motorcycle, err := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, err := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 	motorcycle.Year = 2007
 
 	// ACT
@@ -148,11 +148,47 @@ func TestMotorcycle_ChangeFieldValueAndValidate_Successful(t *testing.T) {
 func TestMotorcycle_ChangeFieldValueAndValidate_Failure(t *testing.T) {
 
 	// ARRANGE
-	motorcycle, err := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, err := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 	motorcycle.Year = 3000
 
 	// ACT
 	err = motorcycle.Validate()
+
+	// ASSERT
+	assert.NotNil(t, err)
+}
+
+// TestMotorcycleVin_GT17Characters verifies that the VIN's length cannot be more than 17 characters.
+func TestMotorcycleVin_GT17Characters(t *testing.T) {
+
+	// ARRANGE
+
+	// ACT
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 2021, "012345678901234567")
+
+	// ASSERT
+	assert.NotNil(t, err)
+}
+
+// TestMotorcycleVin_LT17Characters verifies that the VIN's length cannot be less than 17 characters.
+func TestMotorcycleVin_LT17Characters(t *testing.T) {
+
+	// ARRANGE
+
+	// ACT
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 2021, "0123456789012345")
+
+	// ASSERT
+	assert.NotNil(t, err)
+}
+
+// TestMotorcycleVin_17Characters verifies that the VIN's length is 17 characters.
+func TestMotorcycleVin_17Characters(t *testing.T) {
+
+	// ARRANGE
+
+	// ACT
+	_, err := entities.NewMotorcycle("Honda", "Shadow", 2021, "01234567890123456")
 
 	// ASSERT
 	assert.NotNil(t, err)

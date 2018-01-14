@@ -29,7 +29,7 @@ func TestMotorcycleRepository_ListOfOne(t *testing.T) {
 	// ACT
 	repo, _ := repositories.NewMotorcycleRepository()
 
-	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 	repo.Insert(motorcycle)
 
 	// ASSERT
@@ -41,7 +41,7 @@ func TestMotorcycleRepository_Insert(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 
 	// ACT
 	moto, _ := repo.Insert(motorcycle)
@@ -56,7 +56,7 @@ func TestMotorcycleRepository_Insert_IDAlreadyExists(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 
 	// ACT
 	moto, err := repo.Insert(motorcycle)
@@ -66,12 +66,12 @@ func TestMotorcycleRepository_Insert_IDAlreadyExists(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-// TestMotorcycleRepository_FindByID verifies that an insert is successful.
+// TestMotorcycleRepository_FindByID verifies that an existing motorcycle is found by ID.
 func TestMotorcycleRepository_FindByID(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 	moto, _ := repo.Insert(motorcycle)
 
 	// ACT
@@ -81,7 +81,7 @@ func TestMotorcycleRepository_FindByID(t *testing.T) {
 	assert.True(t, moto.ID == foundMoto.ID)
 }
 
-// TestMotorcycleRepository_FindByID verifies that an insert is successful.
+// TestMotorcycleRepository_FindByID verifies that a motorcycle is not found using an invalid ID.
 func TestMotorcycleRepository_FindByID_NotExist(t *testing.T) {
 
 	// ARRANGE
@@ -94,12 +94,40 @@ func TestMotorcycleRepository_FindByID_NotExist(t *testing.T) {
 	assert.Nil(t, foundMoto)
 }
 
+// TestMotorcycleRepository_FindByVin verifies that an existing motorcycle is found by VIN.
+func TestMotorcycleRepository_FindByVin(t *testing.T) {
+
+	// ARRANGE
+	repo, _ := repositories.NewMotorcycleRepository()
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
+	moto, _ := repo.Insert(motorcycle)
+
+	// ACT
+	foundMoto, _ := repo.FindByVin(moto.Vin)
+
+	// ASSERT
+	assert.True(t, moto.Vin == foundMoto.Vin)
+}
+
+// TestMotorcycleRepository_FindByVin_NotExist verifies that a motorcycle is not found using an invalid VIN.
+func TestMotorcycleRepository_FindByVin_NotExist(t *testing.T) {
+
+	// ARRANGE
+	repo, _ := repositories.NewMotorcycleRepository()
+
+	// ACT
+	foundMoto, _ := repo.FindByVin("99999999999999999")
+
+	// ASSERT
+	assert.Nil(t, foundMoto)
+}
+
 // TestMotorcycleRepository_Update verifies that an update is successful.
 func TestMotorcycleRepository_Update(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 	moto, _ := repo.Insert(motorcycle)
 	moto.Make = "Harley Davidson"
 
@@ -116,7 +144,7 @@ func TestMotorcycleRepository_Update_NotExist(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 	motorcycle.ID = 123
 
 	// ACT
@@ -131,7 +159,7 @@ func TestMotorcycleRepository_Delete(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 	moto, _ := repo.Insert(motorcycle)
 
 	// ACT
@@ -147,7 +175,7 @@ func TestMotorcycleRepository_Delete_NotExist(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repositories.NewMotorcycleRepository()
-	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006)
+	motorcycle, _ := entities.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 	motorcycle.ID = 123
 
 	// ACT
