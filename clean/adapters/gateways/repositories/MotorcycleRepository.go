@@ -41,7 +41,7 @@ func (repo MotorcycleRepository) Validate() error {
 
 // List gets the unordered list of motorcycles in the repository.
 // Returns the (list of motorcycles, nil) or an (nil, error).
-func (repo MotorcycleRepository) List() ([]entities.Motorcycle, error) {
+func (repo *MotorcycleRepository) List() ([]entities.Motorcycle, error) {
 	return repo.Motorcycles, nil
 }
 

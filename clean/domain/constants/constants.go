@@ -23,3 +23,6 @@ const VinLength = 17
 
 // InvalidEntityID is used when there is an invalid ID for an entity.
 const InvalidEntityID = -1
+
+// MinEntityID is the minimum ID value.
+const MinEntityID = 0

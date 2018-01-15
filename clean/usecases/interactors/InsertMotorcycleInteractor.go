@@ -13,6 +13,7 @@ import (
 	"errors"
 	"github.com/abitofhelp/motominderapi/clean/domain/constants"
 	"github.com/abitofhelp/motominderapi/clean/domain/entities"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumerations"
 	"github.com/abitofhelp/motominderapi/clean/usecases/requestmessages"
 	"github.com/abitofhelp/motominderapi/clean/usecases/responsemessages"
 )
@@ -75,13 +76,14 @@ type InsertMotorcycleInteractor struct {
 
 // NewInsertMotorcycleInteractor creates a new instance of a InsertMotorcycleInteractor.
 // Returns (nil, error) when there is an error, otherwise (InsertMotorcycleInteractor, nil).
-func (insertMotorcycleInteractor *InsertMotorcycleInteractor) NewInsertMotorcycleInteractor(motorcycleRepository interfaces.MotorcycleRepository, authService interfaces.AuthService) (*InsertMotorcycleInteractor, error) {
+func NewInsertMotorcycleInteractor(motorcycleRepository interfaces.MotorcycleRepository, authService interfaces.AuthService) (*InsertMotorcycleInteractor, error) {
 
 	interactor := &InsertMotorcycleInteractor{
 		MotorcycleRepository: motorcycleRepository,
 		AuthService:          authService,
 	}
 
+	// Validate the interactor
 	err := interactor.Validate()
 	if err != nil {
 		return nil, err
@@ -98,28 +100,27 @@ func (insertMotorcycleInteractor InsertMotorcycleInteractor) Validate() error {
 		// MotorcycleRepository is required and cannot be null.
 		validation.Field(&insertMotorcycleInteractor.MotorcycleRepository, validation.Required),
 		// AuthService is required and cannot be null.
-		validation.Field(&insertMotorcycleInteractor.AuthService, validation.Required),
-	)
+		validation.Field(&insertMotorcycleInteractor.AuthService, validation.Required))
 }
 
 // Handle processes the request message.
 // The request message is a dto containing the required data for completing the use case.
 // The method returns the response message, which is a dto containing the response data, or an error.
-func (insertMotorcycleInteractor *InsertMotorcycleInteractor) Handle(requestMessage requestmessages.InsertMotorcycleRequestMessage) (*responsemessages.InsertMotorcycleResponseMessage, error) {
+func (insertMotorcycleInteractor *InsertMotorcycleInteractor) Handle(requestMessage *requestmessages.InsertMotorcycleRequestMessage) (*responsemessages.InsertMotorcycleResponseMessage, error) {
 	// Verify that the user has been properly authenticated.
 	if !insertMotorcycleInteractor.AuthService.IsAuthenticated() {
-		return responsemessages.NewInsertMotorcycleResponseMessage(constants.InvalidEntityID, errors.New("insert operation failed due to not being authenticated, so lease contact your system administrator"))
+		return responsemessages.NewInsertMotorcycleResponseMessage(constants.InvalidEntityID, errors.New("insert operation failed due to not being authenticated, so please contact your system administrator"))
 	}
 
 	// Verify that the user has the necessary authorizations.
-	if !insertMotorcycleInteractor.AuthService.IsAuthorized("Admin") {
-		return responsemessages.NewInsertMotorcycleResponseMessage(constants.InvalidEntityID, errors.New("insert operation failed due to not being authenticated, so lease contact your system administrator"))
+	if !insertMotorcycleInteractor.AuthService.IsAuthorized(enumerations.AdminAuthorizationRole) {
+		return responsemessages.NewInsertMotorcycleResponseMessage(constants.InvalidEntityID, errors.New("insert operation failed due to not having the required user authorization roles, so please contact your system administrator"))
 	}
 
 	// Verify that a motorcycle with the same vin does not exist.
-	_, err := insertMotorcycleInteractor.MotorcycleRepository.FindByVin(requestMessage.Vin)
-	if err != nil {
-		return responsemessages.NewInsertMotorcycleResponseMessage(constants.InvalidEntityID, err)
+	moto, err := insertMotorcycleInteractor.MotorcycleRepository.FindByVin(requestMessage.Vin)
+	if moto != nil {
+		return responsemessages.NewInsertMotorcycleResponseMessage(constants.InvalidEntityID, errors.New("insert operation failed due to a motorcycle with the same VIN already existing in the repository"))
 	}
 
 	// Create a new Motorcycle entity.

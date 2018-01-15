@@ -1,7 +1,10 @@
-// Package responsemodels contains the response models for each use case/interactor.
+// Package responsemessages contains the response messages for the use cases.
 package responsemessages
 
-import "github.com/go-ozzo/ozzo-validation"
+import (
+	"github.com/go-ozzo/ozzo-validation"
+	"github.com/pkg/errors"
+)
 
 // InsertMotorcycleResponseMessage is a simple dto containing the response data for the InsertMotorcycleInteractor.
 type InsertMotorcycleResponseMessage struct {
@@ -18,9 +21,11 @@ func NewInsertMotorcycleResponseMessage(id int, err error) (*InsertMotorcycleRes
 		Error: err,
 	}
 
-	err = responseMessage.Validate()
-	if err != nil {
-		return nil, err
+	msgErr := responseMessage.Validate()
+	if msgErr != nil {
+		// We had an error validating the response message,
+		// so we will wrap the original error with the validation error.
+		return nil, errors.Wrap(msgErr, responseMessage.Error.Error())
 	}
 
 	// All okay
@@ -31,6 +36,8 @@ func NewInsertMotorcycleResponseMessage(id int, err error) (*InsertMotorcycleRes
 // Although it is possible that the same rules apply as for the Motorcycle entity, we
 // will assume that different rules may be used with this dto.
 // Returns nil if the InsertMotorcycleResponseMessage contains valid data, otherwise an error.
-func (insertMotorcycleResponseMessage *InsertMotorcycleResponseMessage) Validate() error {
-	return validation.ValidateStruct(nil)
+func (insertMotorcycleResponseMessage InsertMotorcycleResponseMessage) Validate() error {
+	return validation.ValidateStruct(&insertMotorcycleResponseMessage,
+		// ID is required and it must be non-zero
+		validation.Field(&insertMotorcycleResponseMessage.ID, validation.Required))
 }

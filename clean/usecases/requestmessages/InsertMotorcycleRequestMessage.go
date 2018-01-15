@@ -1,4 +1,4 @@
-// Package requestmodels contains the request models for each use case/interactor.
+// Package requestmessages contains the request messages for the use cases.
 package requestmessages
 
 import (

@@ -5,11 +5,13 @@ package enumerations
 type AuthorizationRole int
 
 const (
-	// Admin is a user with authorization to access administrative resources.
-	AdminAuthorizationRole = iota
-	// Accounting is a user with authorization to access accounting resources.
+	// NoAuthorizationRole is when the user does not require any authorization roles to access resources.
+	NoAuthorizationRole = iota
+	// AdminAuthorizationRole is a user with authorization to access administrative resources.
+	AdminAuthorizationRole
+	// AccountingAuthorizationRole is a user with authorization to access accounting resources.
 	AccountingAuthorizationRole
-	// General is a user with administrative authorization to access general resources.
+	// GeneralAuthorizationRole is a user with administrative authorization to access general resources.
 	GeneralAuthorizationRole
 )
 
