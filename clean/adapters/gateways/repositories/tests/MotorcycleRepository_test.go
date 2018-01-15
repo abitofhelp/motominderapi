@@ -4,8 +4,8 @@ package motorcycleRepositoryTests
 import (
 	"testing"
 
+	"github.com/abitofhelp/motominderapi/clean/adapters/gateways/repositories"
 	"github.com/abitofhelp/motominderapi/clean/domain/entities"
-	"github.com/abitofhelp/motominderapi/clean/infrastructure/repositories"
 	"github.com/stretchr/testify/assert"
 )
 

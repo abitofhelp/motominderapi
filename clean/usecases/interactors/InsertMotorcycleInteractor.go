@@ -31,7 +31,7 @@ PRECONDITIONS
 User is logged into system.
 User possesses the necessary security authorizations to insert a motorcycle.
 A motorcycle of the same make, model, and year does not already exist.
-The network and infrastructure is working properly.
+The network and configuration is working properly.
 
 POSTCONDITIONS
 User has inserted a new motorcycle make, model, and year into the system,
@@ -61,10 +61,10 @@ EXTENSIONS
 	   make, model, and year already exists.  The User clicks the "OK" button, and
 	   returns to the primary view.
 
-(3d) Inserting the motorcycle into the repository failed due to infrastructure issues.
+(3d) Inserting the motorcycle into the repository failed due to configuration issues.
        System displays an error message saying that the insertion of the motorcycle was
-	   unsuccessful due to infrastructure issues.  The user can click "Retry" or "Cancel".
-	   Cancel will return to the primary view.  If the infrastructure is operating properly, System returns to (4), otherwise System goes to (3d).
+	   unsuccessful due to configuration issues.  The user can click "Retry" or "Cancel".
+	   Cancel will return to the primary view.  If the configuration is operating properly, System returns to (4), otherwise System goes to (3d).
 */
 
 // InsertMotorcycleInteractor is a use case for adding a motorcycle to the motorcycle repository.
