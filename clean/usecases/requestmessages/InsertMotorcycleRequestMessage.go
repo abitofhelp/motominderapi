@@ -35,9 +35,7 @@ func NewInsertMotorcycleRequestMessage(make string, model string, year int, vin 
 }
 
 // Validate verifies that a InsertMotorcycleRequestMessage's fields contain valid data.
-// Although it is possible that the same rules apply as for the Motorcycle entity, we
-// will assume that different rules may be used with this dto.
-// Returns nil if the InsertMotorcycleRequestMessage contains valid data, otherwise an error.
+// Returns (an instance of InsertMotorcycleRequestMessage, nil) on success, otherwise (nil, error)
 func (insertMotorcycleRequestMessage InsertMotorcycleRequestMessage) Validate() error {
 	return validation.ValidateStruct(&insertMotorcycleRequestMessage,
 		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)

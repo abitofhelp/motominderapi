@@ -25,4 +25,4 @@ const VinLength = 17
 const InvalidEntityID = -1
 
 // MinEntityID is the minimum ID value.
-const MinEntityID = 0
+const MinEntityID = 1

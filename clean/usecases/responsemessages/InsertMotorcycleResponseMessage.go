@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// InsertMotorcycleResponseMessage is a simple dto containing the response data for the InsertMotorcycleInteractor.
+// InsertMotorcycleResponseMessage is a simple dto containing the response data from the InsertMotorcycleInteractor.
 type InsertMotorcycleResponseMessage struct {
 	ID    int   `json:"id"`
 	Error error `json:"error"`
@@ -33,8 +33,6 @@ func NewInsertMotorcycleResponseMessage(id int, err error) (*InsertMotorcycleRes
 }
 
 // Validate verifies that a InsertMotorcycleResponseMessage's fields contain valid data.
-// Although it is possible that the same rules apply as for the Motorcycle entity, we
-// will assume that different rules may be used with this dto.
 // Returns nil if the InsertMotorcycleResponseMessage contains valid data, otherwise an error.
 func (insertMotorcycleResponseMessage InsertMotorcycleResponseMessage) Validate() error {
 	return validation.ValidateStruct(&insertMotorcycleResponseMessage,

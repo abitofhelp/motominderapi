@@ -103,9 +103,9 @@ func (insertMotorcycleInteractor InsertMotorcycleInteractor) Validate() error {
 		validation.Field(&insertMotorcycleInteractor.AuthService, validation.Required))
 }
 
-// Handle processes the request message.
+// Handle processes the request message and generates the response message.  It is performing the use case.
 // The request message is a dto containing the required data for completing the use case.
-// The method returns the response message, which is a dto containing the response data, or an error.
+// On success, the method returns the (response message, nil), otherwise (nil, error).
 func (insertMotorcycleInteractor *InsertMotorcycleInteractor) Handle(requestMessage *requestmessages.InsertMotorcycleRequestMessage) (*responsemessages.InsertMotorcycleResponseMessage, error) {
 	// Verify that the user has been properly authenticated.
 	if !insertMotorcycleInteractor.AuthService.IsAuthenticated() {
