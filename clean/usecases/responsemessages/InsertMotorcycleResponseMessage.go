@@ -16,19 +16,32 @@ type InsertMotorcycleResponseMessage struct {
 // Returns (nil, error) when there is an error, otherwise (InsertMotorcycleResponseMessage, nil).
 func NewInsertMotorcycleResponseMessage(id int, err error) (*InsertMotorcycleResponseMessage, error) {
 
+	// We return a (nil, error) only when validation of the response message fails, not for whether the
+	// response message indicates failure.
+
 	responseMessage := &InsertMotorcycleResponseMessage{
 		ID:    id,
 		Error: err,
 	}
 
 	msgErr := responseMessage.Validate()
-	if msgErr != nil {
-		// We had an error validating the response message,
-		// so we will wrap the original error with the validation error.
+
+	// If were have a response message with a failure and validation failed, we will wrap the original error with the validation error.
+	if responseMessage.Error != nil && msgErr != nil {
 		return nil, errors.Wrap(msgErr, responseMessage.Error.Error())
 	}
 
-	// All okay
+	// If were have a response message that indicates success, but validation failed, we will return the validation error.
+	if responseMessage.Error == nil && msgErr != nil {
+		return nil, msgErr
+	}
+
+	// If were have a response message that failed, but validation was successful, we will return response.
+	if responseMessage.Error != nil && msgErr == nil {
+		return responseMessage, nil
+	}
+
+	// Otherwise, all okay
 	return responseMessage, nil
 }
 
