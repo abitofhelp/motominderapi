@@ -61,11 +61,6 @@ EXTENSIONS
        System displays an error message indicating that a motorcycle with the same
 	   make, model, and year already exists.  The User clicks the "OK" button, and
 	   returns to the primary view.
-
-(3d) Inserting the motorcycle into the repository failed due to configuration issues.
-       System displays an error message saying that the insertion of the motorcycle was
-	   unsuccessful due to configuration issues.  The user can click "Retry" or "Cancel".
-	   Cancel will return to the primary view.  If the configuration is operating properly, System returns to (4), otherwise System goes to (3d).
 */
 
 // InsertMotorcycleInteractor is a use case for adding a motorcycle to the motorcycle repository.
