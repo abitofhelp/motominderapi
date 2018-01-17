@@ -1,4 +1,4 @@
-// Package requestmessage contains the request messages for the use cases.
+// Package request contains the request messages for the use cases.
 package request
 
 import (

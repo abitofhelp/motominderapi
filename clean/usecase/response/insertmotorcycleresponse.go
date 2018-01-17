@@ -1,4 +1,4 @@
-// Package responsemessage contains the response messages for the use cases.
+// Package response contains the response messages for the use cases.
 package response
 
 import (

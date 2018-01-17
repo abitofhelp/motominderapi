@@ -1,4 +1,4 @@
-// Package viewModels translates a response message into a view model.
+// Package viewmodel translates a response message into a view model.
 package viewmodel
 
 import (
