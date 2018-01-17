@@ -1,4 +1,4 @@
-// Package main is the entrypoint for the API web service.
+// Package main is the entry point for the API web service.
 package main
 
 import (

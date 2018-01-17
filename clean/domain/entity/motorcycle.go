@@ -1,4 +1,4 @@
-// Package entities contains the domain entities.
+// Package entity contains the domain entities.
 package entity
 
 import (

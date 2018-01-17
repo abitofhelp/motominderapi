@@ -21,13 +21,13 @@ func TestApi_InsertMotorcycle(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	request, _ := request.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
-	interactor, _ := interactor.NewInsertMotorcycleInteractor(repo, authService)
-	response, _ := interactor.Handle(request)
-	presenter, _ := presenter.NewInsertMotorcyclePresenter()
+	motorcycleRequest, _ := request.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
+	motorcycleInteractor, _ := interactor.NewInsertMotorcycleInteractor(repo, authService)
+	response, _ := motorcycleInteractor.Handle(motorcycleRequest)
+	motorcyclePresenter, _ := presenter.NewInsertMotorcyclePresenter()
 
 	// ACT
-	viewModel, _ := presenter.Handle(response)
+	viewModel, _ := motorcyclePresenter.Handle(response)
 
 	// ASSERT
 	assert.Nil(t, viewModel.Error)
