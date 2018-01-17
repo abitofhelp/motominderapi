@@ -10,7 +10,7 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/repository"
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/security"
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
-	"github.com/abitofhelp/motominderapi/clean/usecase/requestmessage"
+	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -49,11 +49,11 @@ func TestInsertMotorcycleInteractor_NotAuthenticated(t *testing.T) {
 	roles := make(map[enumeration.AuthorizationRole]bool)
 	authService, _ := security.NewAuthService(false, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	request, _ := requestmessage.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
+	motorcycleRequest, _ := request.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
 	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
 
 	// ACT
-	response, _ := interactor.Handle(request)
+	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
 	assert.NotNil(t, response.Error)
@@ -68,11 +68,11 @@ func TestInsertMotorcycleInteractor_NotAuthorized(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	request, _ := requestmessage.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
+	motorcycleRequest, _ := request.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
 	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
 
 	// ACT
-	response, _ := interactor.Handle(request)
+	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
 	assert.True(t, response.ID == -1)
@@ -88,11 +88,11 @@ func TestInsertMotorcycleInteractor_Insert(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	request, _ := requestmessage.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
+	motorcycleRequest, _ := request.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
 	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
 
 	// ACT
-	response, _ := interactor.Handle(request)
+	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
 	assert.True(t, response.ID > 0)
@@ -108,12 +108,12 @@ func TestInsertMotorcycleInteractor_Insert_VinAlreadyExists(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	request, _ := requestmessage.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
+	motorcycleRequest, _ := request.NewInsertMotorcycleRequestMessage("Honda", "Shadow", 2006, "01234567890123456")
 	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
-	interactor.Handle(request)
+	interactor.Handle(motorcycleRequest)
 
 	// ACT
-	response, _ := interactor.Handle(request)
+	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
 	assert.NotNil(t, response.Error)

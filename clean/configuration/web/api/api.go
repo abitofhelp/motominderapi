@@ -18,7 +18,7 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/configuration/web/api/dto"
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/abitofhelp/motominderapi/clean/usecase/interactor"
-	"github.com/abitofhelp/motominderapi/clean/usecase/requestmessage"
+	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/go-ozzo/ozzo-validation"
 )
 
@@ -75,42 +75,42 @@ func (api *Api) configureRouter() error {
 	// Create a new motorcycle in the repository.
 	api.Router.POST("/motorcycles", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
-		// Stub a motorcycle to be populated from the body of the request.
-		dto := dto.InsertMotorcycleDto{}
+		// Stub a motorcycle to be populated from the body of the motorcycleRequest.
+		motorcycleDto := dto.InsertMotorcycleDto{}
 
-		// Populate the motorcycle from the request body.
-		json.NewDecoder(r.Body).Decode(&dto)
+		// Populate the motorcycle from the motorcycleRequest body.
+		json.NewDecoder(r.Body).Decode(&motorcycleDto)
 
-		// Create the request, process it, and get the resulting view model or error.
-		request, err := requestmessage.NewInsertMotorcycleRequestMessage(dto.Make, dto.Model, dto.Year, dto.Vin)
+		// Create the motorcycleRequest, process it, and get the resulting view model or error.
+		motorcycleRequest, err := request.NewInsertMotorcycleRequestMessage(motorcycleDto.Make, motorcycleDto.Model, motorcycleDto.Year, motorcycleDto.Vin)
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(400)
 			return
 		}
 
-		interactor, err := interactor.NewInsertMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
+		motorcycleInteractor, err := interactor.NewInsertMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(500)
 			return
 		}
 
-		response, err := interactor.Handle(request)
+		response, err := motorcycleInteractor.Handle(motorcycleRequest)
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(500)
 			return
 		}
 
-		presenter, err := presenter.NewInsertMotorcycleResponseMessagePresenter()
+		motorcyclePresenter, err := presenter.NewInsertMotorcyclePresenter()
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(500)
 			return
 		}
 
-		viewModel, err := presenter.Handle(response)
+		viewModel, err := motorcyclePresenter.Handle(response)
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(500)

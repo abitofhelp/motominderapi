@@ -14,8 +14,8 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
-	"github.com/abitofhelp/motominderapi/clean/usecase/requestmessage"
-	"github.com/abitofhelp/motominderapi/clean/usecase/responsemessage"
+	"github.com/abitofhelp/motominderapi/clean/usecase/request"
+	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 )
 
 /*
@@ -95,52 +95,52 @@ func NewInsertMotorcycleInteractor(motorcycleRepository contract.MotorcycleRepos
 
 // Validate verifies that a InsertMotorcycleInteractor's fields contain valid data.
 // Returns nil if the InsertMotorcycleInteractor contains valid data, otherwise an error.
-func (insertMotorcycleInteractor InsertMotorcycleInteractor) Validate() error {
-	return validation.ValidateStruct(&insertMotorcycleInteractor,
+func (interactor InsertMotorcycleInteractor) Validate() error {
+	return validation.ValidateStruct(&interactor,
 		// MotorcycleRepository is required and cannot be null.
-		validation.Field(&insertMotorcycleInteractor.MotorcycleRepository, validation.Required),
+		validation.Field(&interactor.MotorcycleRepository, validation.Required),
 		// AuthService is required and cannot be null.
-		validation.Field(&insertMotorcycleInteractor.AuthService, validation.Required))
+		validation.Field(&interactor.AuthService, validation.Required))
 }
 
 // Handle processes the request message and generates the response message.  It is performing the use case.
 // The request message is a dto containing the required data for completing the use case.
 // On success, the method returns the (response message, nil), otherwise (nil, error).
-func (insertMotorcycleInteractor *InsertMotorcycleInteractor) Handle(requestMessage *requestmessage.InsertMotorcycleRequestMessage) (*responsemessage.InsertMotorcycleResponseMessage, error) {
+func (interactor *InsertMotorcycleInteractor) Handle(requestMessage *request.InsertMotorcycleRequest) (*response.InsertMotorcycleResponse, error) {
 	// Verify that the user has been properly authenticated.
-	if !insertMotorcycleInteractor.AuthService.IsAuthenticated() {
-		return responsemessage.NewInsertMotorcycleResponseMessage(constant.InvalidEntityID, errors.New("insert operation failed due to not being authenticated, so please contact your system administrator"))
+	if !interactor.AuthService.IsAuthenticated() {
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New("insert operation failed due to not being authenticated, so please contact your system administrator"))
 	}
 
 	// Verify that the user has the necessary authorizations.
-	if !insertMotorcycleInteractor.AuthService.IsAuthorized(enumeration.AdminAuthorizationRole) {
-		return responsemessage.NewInsertMotorcycleResponseMessage(constant.InvalidEntityID, errors.New("insert operation failed due to not having the required user authorization roles, so please contact your system administrator"))
+	if !interactor.AuthService.IsAuthorized(enumeration.AdminAuthorizationRole) {
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New("insert operation failed due to not having the required user authorization roles, so please contact your system administrator"))
 	}
 
 	// Verify that a motorcycle with the same vin does not exist.
-	moto, err := insertMotorcycleInteractor.MotorcycleRepository.FindByVin(requestMessage.Vin)
+	moto, err := interactor.MotorcycleRepository.FindByVin(requestMessage.Vin)
 	if moto != nil {
-		return responsemessage.NewInsertMotorcycleResponseMessage(constant.InvalidEntityID, errors.New("insert operation failed due to a motorcycle with the same VIN already existing in the repository"))
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New("insert operation failed due to a motorcycle with the same VIN already existing in the repository"))
 	}
 
 	// Create a new Motorcycle entity.
 	motorcycle, err := entity.NewMotorcycle(requestMessage.Make, requestMessage.Model, requestMessage.Year, requestMessage.Vin)
 	if err != nil {
-		return responsemessage.NewInsertMotorcycleResponseMessage(constant.InvalidEntityID, err)
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, err)
 	}
 
 	// Insert the new motorcycle entity into the repository.
-	motorcycle, err = insertMotorcycleInteractor.MotorcycleRepository.Insert(motorcycle)
+	motorcycle, err = interactor.MotorcycleRepository.Insert(motorcycle)
 	if err != nil {
-		return responsemessage.NewInsertMotorcycleResponseMessage(constant.InvalidEntityID, err)
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, err)
 	}
 
 	// Save the changes.
-	err = insertMotorcycleInteractor.MotorcycleRepository.Save()
+	err = interactor.MotorcycleRepository.Save()
 	if err != nil {
-		return responsemessage.NewInsertMotorcycleResponseMessage(constant.InvalidEntityID, err)
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, err)
 	}
 
 	// Return the successful response message.
-	return responsemessage.NewInsertMotorcycleResponseMessage(motorcycle.ID, nil)
+	return response.NewInsertMotorcycleResponse(motorcycle.ID, nil)
 }
