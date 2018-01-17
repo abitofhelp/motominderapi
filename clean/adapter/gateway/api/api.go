@@ -12,10 +12,10 @@ import (
 	"github.com/julienschmidt/httprouter"
 
 	// Motominder's entity packages
+	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/api/dto"
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/repository"
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/security"
 	"github.com/abitofhelp/motominderapi/clean/adapter/presenter"
-	"github.com/abitofhelp/motominderapi/clean/configuration/web/api/dto"
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/abitofhelp/motominderapi/clean/usecase/interactor"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
@@ -42,20 +42,12 @@ func (api Api) Validate() error {
 
 // NewApi creates a new instance of an Api.
 // Returns (an instance of APi, nil), otherwise (nil, error)
-func NewApi() (*Api, error) {
-
-	roles := map[enumeration.AuthorizationRole]bool{
-		enumeration.AdminAuthorizationRole: true,
-	}
-
-	authService, _ := security.NewAuthService(true, roles)
-	repo, _ := repository.NewMotorcycleRepository()
-	router := httprouter.New()
+func NewApi(roles map[enumeration.AuthorizationRole]bool, authService *security.AuthService, motorcycleRepository *repository.MotorcycleRepository, router *httprouter.Router) (*Api, error) {
 
 	api := &Api{
 		Roles:                roles,
 		AuthService:          authService,
-		MotorcycleRepository: repo,
+		MotorcycleRepository: motorcycleRepository,
 		Router:               router,
 	}
 
