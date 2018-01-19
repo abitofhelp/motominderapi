@@ -23,7 +23,11 @@ type MotorcycleRepository struct {
 // NewMotorcycleRepository creates a new instance of a MotorcycleRepository.
 // Returns (nil, error) when there is an error, otherwise a (MotorcycleRepository, nil).
 func NewMotorcycleRepository() (*MotorcycleRepository, error) {
-	motorcycleRepository := &MotorcycleRepository{}
+	motorcycleRepository := &MotorcycleRepository{
+
+		// Ensure that we create an empty slice rather than the default for []entity.Motorcycle, which is a null pointer.
+		Motorcycles: make([]entity.Motorcycle, 0),
+	}
 	err := motorcycleRepository.Validate()
 	if err != nil {
 		return nil, err
@@ -36,7 +40,9 @@ func NewMotorcycleRepository() (*MotorcycleRepository, error) {
 // Validate test that a motorcycle repository is valid.
 // Returns nil on success, otherwise an error.
 func (repo MotorcycleRepository) Validate() error {
-	return validation.ValidateStruct(&repo)
+	return validation.ValidateStruct(&repo,
+		// Motorcycles can be empty, but not nil
+		validation.Field(&repo.Motorcycles, validation.NotNil))
 }
 
 // List gets the unordered list of motorcycles in the repository.

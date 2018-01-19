@@ -27,13 +27,22 @@ func NewInsertMotorcycleViewModel(id int, message string, err error) (*InsertMot
 	}
 
 	msgErr := viewModel.Validate()
-	if msgErr != nil {
-		// We had an error validating the response message,
-		// so we will wrap the original error with the validation error.
+	// If we have a response message with a failure and validation failed, we will wrap the original error with the validation error.
+	if viewModel.Error != nil && msgErr != nil {
 		return nil, errors.Wrap(msgErr, viewModel.Error.Error())
 	}
 
-	// All okay
+	// If we have a response message that indicates success, but validation failed, we will return the validation error.
+	if viewModel.Error == nil && msgErr != nil {
+		return nil, msgErr
+	}
+
+	// If we have a response message that failed, but validation was successful, we will return response.
+	if viewModel.Error != nil && msgErr == nil {
+		return viewModel, nil
+	}
+
+	// Otherwise, all okay
 	return viewModel, nil
 }
 

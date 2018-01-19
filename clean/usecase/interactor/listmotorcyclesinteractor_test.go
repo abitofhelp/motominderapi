@@ -15,52 +15,52 @@ import (
 	"testing"
 )
 
-// TestInsertMotorcycleInteractor_MotorcycleRepositoryIsNil verifies that a nil motorcycle repository fails properly.
-func TestInsertMotorcycleInteractor_MotorcycleRepositoryIsNil(t *testing.T) {
+// TestListMotorcyclesInteractor_MotorcycleRepositoryIsNil verifies that a nil motorcycle repository fails properly.
+func TestListMotorcyclesInteractor_MotorcycleRepositoryIsNil(t *testing.T) {
 
 	// ARRANGE
 	roles := make(map[enumeration.AuthorizationRole]bool)
 	authService, _ := security.NewAuthService(true, roles)
 
 	// ACT
-	_, err := NewInsertMotorcycleInteractor(nil, authService)
+	_, err := NewListMotorcyclesInteractor(nil, authService)
 
 	// ASSERT
 	assert.NotNil(t, err)
 }
 
-// TestInsertMotorcycleInteractor_MotorcycleRepositoryIsNil verifies that a nil authorization service fails properly.
-func TestInsertMotorcycleInteractor_AuthServiceIsNil(t *testing.T) {
+// TestListMotorcyclesInteractor_MotorcycleRepositoryIsNil verifies that a nil authorization service fails properly.
+func TestListMotorcyclesInteractor_AuthServiceIsNil(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repository.NewMotorcycleRepository()
 
 	// ACT
-	_, err := NewInsertMotorcycleInteractor(repo, nil)
+	_, err := NewListMotorcyclesInteractor(repo, nil)
 
 	// ASSERT
 	assert.NotNil(t, err)
 }
 
-// TestInsertMotorcycleInteractor_NotAuthenticated verifies that a non-authenticated user fails properly.
-func TestInsertMotorcycleInteractor_NotAuthenticated(t *testing.T) {
+// TestListMotorcyclesInteractor_NotAuthenticated verifies that a non-authenticated user fails properly.
+func TestListMotorcyclesInteractor_NotAuthenticated(t *testing.T) {
 
 	// ARRANGE
 	roles := make(map[enumeration.AuthorizationRole]bool)
 	authService, _ := security.NewAuthService(false, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
-	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
+	motorcycleRequest, _ := request.NewListMotorcyclesRequest()
+	interactor, _ := NewListMotorcyclesInteractor(repo, authService)
 
 	// ACT
 	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
-	assert.NotNil(t, response.Error)
+	assert.NotNil(t, response.Error.Error())
 }
 
-// TestInsertMotorcycleInteractor_NotAuthorized verifies that an authenticated user lacking an authorization role cannot insert a motorcycle.
-func TestInsertMotorcycleInteractor_NotAuthorized(t *testing.T) {
+// TestListMotorcyclesInteractor_NotAuthorized verifies that an authenticated user lacking an authorization role cannot insert a motorcycle.
+func TestListMotorcyclesInteractor_NotAuthorized(t *testing.T) {
 
 	// ARRANGE
 	roles := map[enumeration.AuthorizationRole]bool{
@@ -68,19 +68,19 @@ func TestInsertMotorcycleInteractor_NotAuthorized(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
-	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
+	motorcycleRequest, _ := request.NewListMotorcyclesRequest()
+	interactor, _ := NewListMotorcyclesInteractor(repo, authService)
 
 	// ACT
 	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
-	assert.True(t, response.ID == -1)
+	assert.Nil(t, response.Motorcycles)
 	assert.NotNil(t, response.Error)
 }
 
-// TestInsertMotorcycleInteractor_Insert inserts a new motorcycle into the repository.
-func TestInsertMotorcycleInteractor_Insert(t *testing.T) {
+// TestListMotorcyclesInteractor_EmptyList gets an empty list of motorcycles from the repository.
+func TestListMotorcyclesInteractor_EmptyList(t *testing.T) {
 
 	// ARRANGE
 	roles := map[enumeration.AuthorizationRole]bool{
@@ -88,19 +88,18 @@ func TestInsertMotorcycleInteractor_Insert(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
-	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
+	motorcycleRequest, _ := request.NewListMotorcyclesRequest()
+	interactor, _ := NewListMotorcyclesInteractor(repo, authService)
 
 	// ACT
 	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
-	assert.True(t, response.ID > 0)
-	assert.Nil(t, response.Error)
+	assert.Len(t, response.Motorcycles, 0)
 }
 
-// TestInsertMotorcycleInteractor_Insert_VinAlreadyExists verifies that a duplicate motorcycle will not be created.
-func TestInsertMotorcycleInteractor_Insert_VinAlreadyExists(t *testing.T) {
+// TestListMotorcyclesInteractor gets a non-empty list of motorcycles from the repository.
+func TestListMotorcyclesInteractor_NotEmptyList(t *testing.T) {
 
 	// ARRANGE
 	roles := map[enumeration.AuthorizationRole]bool{
@@ -108,13 +107,18 @@ func TestInsertMotorcycleInteractor_Insert_VinAlreadyExists(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
-	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
-	interactor.Handle(motorcycleRequest)
+	listRequest, _ := request.NewListMotorcyclesRequest()
+	listInteractor, _ := NewListMotorcyclesInteractor(repo, authService)
+
+	insertInteractor, _ := NewInsertMotorcycleInteractor(repo, authService)
+	insertRequest1, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
+	insertRequest2, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2009, "01234567999923456")
+	insertInteractor.Handle(insertRequest1)
+	insertInteractor.Handle(insertRequest2)
 
 	// ACT
-	response, _ := interactor.Handle(motorcycleRequest)
+	response, _ := listInteractor.Handle(listRequest)
 
 	// ASSERT
-	assert.NotNil(t, response.Error)
+	assert.Len(t, response.Motorcycles, 2)
 }

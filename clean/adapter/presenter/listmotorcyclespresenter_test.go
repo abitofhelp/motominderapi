@@ -11,8 +11,8 @@ import (
 	"testing"
 )
 
-// TestInsertMotorcyclePresenter_Handle verifies that a response messages is translated into a proper view model.
-func TestInsertMotorcyclePresenter_Handle(t *testing.T) {
+// TestListMotorcyclesPresenter_Handle verifies that a response messages is translated into a proper view model.
+func TestListMotorcyclesPresenter_Handle(t *testing.T) {
 
 	// ARRANGE
 	roles := map[enumeration.AuthorizationRole]bool{
@@ -20,13 +20,17 @@ func TestInsertMotorcyclePresenter_Handle(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
-	motorcycleInteractor, _ := interactor.NewInsertMotorcycleInteractor(repo, authService)
-	response, _ := motorcycleInteractor.Handle(motorcycleRequest)
-	presenter, _ := NewInsertMotorcyclePresenter()
+	insertRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
+	insertInteractor, _ := interactor.NewInsertMotorcycleInteractor(repo, authService)
+	insertInteractor.Handle(insertRequest)
+
+	listRequest, _ := request.NewListMotorcyclesRequest()
+	listInteractor, _ := interactor.NewListMotorcyclesInteractor(repo, authService)
+	listResponse, _ := listInteractor.Handle(listRequest)
+	presenter, _ := NewListMotorcyclesPresenter()
 
 	// ACT
-	viewModel, _ := presenter.Handle(response)
+	viewModel, _ := presenter.Handle(listResponse)
 
 	// ASSERT
 	assert.Nil(t, viewModel.Error)

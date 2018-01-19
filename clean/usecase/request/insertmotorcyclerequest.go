@@ -14,9 +14,9 @@ type InsertMotorcycleRequest struct {
 	Vin   string `json:"vin"`
 }
 
-// NewInsertMotorcycleRequestMessage creates a new instance of a InsertMotorcycleRequest.
+// NewInsertMotorcycleRequest creates a new instance of a InsertMotorcycleRequest.
 // Returns (nil, error) when there is an error, otherwise (InsertMotorcycleRequest, nil).
-func NewInsertMotorcycleRequestMessage(make string, model string, year int, vin string) (*InsertMotorcycleRequest, error) {
+func NewInsertMotorcycleRequest(make string, model string, year int, vin string) (*InsertMotorcycleRequest, error) {
 
 	motorcycleRequest := &InsertMotorcycleRequest{
 		Make:  make,

@@ -26,17 +26,17 @@ func NewInsertMotorcycleResponse(id int, err error) (*InsertMotorcycleResponse, 
 
 	msgErr := motorcycleResponse.Validate()
 
-	// If were have a response message with a failure and validation failed, we will wrap the original error with the validation error.
+	// If we have a response message with a failure and validation failed, we will wrap the original error with the validation error.
 	if motorcycleResponse.Error != nil && msgErr != nil {
 		return nil, errors.Wrap(msgErr, motorcycleResponse.Error.Error())
 	}
 
-	// If were have a response message that indicates success, but validation failed, we will return the validation error.
+	// If we have a response message that indicates success, but validation failed, we will return the validation error.
 	if motorcycleResponse.Error == nil && msgErr != nil {
 		return nil, msgErr
 	}
 
-	// If were have a response message that failed, but validation was successful, we will return response.
+	// If we have a response message that failed, but validation was successful, we will return response.
 	if motorcycleResponse.Error != nil && msgErr == nil {
 		return motorcycleResponse, nil
 	}
