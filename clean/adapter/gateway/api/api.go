@@ -20,7 +20,6 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/usecase/interactor"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/go-ozzo/ozzo-validation"
-	//"github.com/abitofhelp/motominderapi/clean/usecase/response"
 )
 
 // Api is a web service.
@@ -66,23 +65,11 @@ func NewApi(roles map[enumeration.AuthorizationRole]bool, authService *security.
 
 func (api *Api) configureRouter() error {
 
-	api.createMotorcycleHandler()
+	// Set up the handler to get a list of motorcycles from the repository.
+	api.Router.GET("/api/motorcycles", api.ListMotorcyclesHandler)
 
-	api.listMotorcyclesHandler()
-
-	/*
-		// Get the motorcycles from the repository.
-		api.Router.GET("/api/motorcycles", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-			// Marshal moto into JSON structure
-			jsonMoto, err := json.Marshal(moto)
-			if err == nil {
-				// Write content-type, statuscode, payload
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(200)
-				fmt.Fprintf(w, "%s", jsonMoto)
-			}
-		})
-	*/
+	// Set up the handler to insert a new motorcycle into the repository.
+	api.Router.POST("/api/motorcycles", api.InsertMotorcycleHandler)
 
 	return nil
 }
@@ -100,112 +87,106 @@ func (api *Api) Stop() error {
 	return nil
 }
 
-func (api *Api) listMotorcyclesHandler() {
+// ListMotorcyclesHandler processes requests to get a list of motorcycles from the repository.
+func (api *Api) ListMotorcyclesHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	// Create the listRequest, process it, and get the resulting view model or error.
+	listRequest, err := request.NewListMotorcyclesRequest()
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(400)
+		return
+	}
 
-	// Get the list of motorcycles from the repository.
-	api.Router.GET("/api/motorcycles", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	listInteractor, err := interactor.NewListMotorcyclesInteractor(api.MotorcycleRepository, api.AuthService)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
 
-		// Create the listRequest, process it, and get the resulting view model or error.
-		listRequest, err := request.NewListMotorcyclesRequest()
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(400)
-			return
-		}
+	listResponse, err := listInteractor.Handle(listRequest)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
 
-		listInteractor, err := interactor.NewListMotorcyclesInteractor(api.MotorcycleRepository, api.AuthService)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(500)
-			return
-		}
+	listPresenter, err := presenter.NewListMotorcyclesPresenter()
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
 
-		listResponse, err := listInteractor.Handle(listRequest)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(500)
-			return
-		}
+	viewModel, err := listPresenter.Handle(listResponse)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
 
-		listPresenter, err := presenter.NewListMotorcyclesPresenter()
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(500)
-			return
-		}
-
-		viewModel, err := listPresenter.Handle(listResponse)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(500)
-			return
-		}
-
-		// Marshal provided contract into JSON structure
-		uj, err := json.Marshal(viewModel)
-		if err == nil {
-			// Write content-type, statuscode, payload
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(200)
-			fmt.Fprintf(w, "%s", uj)
-		}
-	})
+	// Marshal provided contract into JSON structure
+	uj, err := json.Marshal(viewModel)
+	if err == nil {
+		// Write content-type, statuscode, payload
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(200)
+		fmt.Fprintf(w, "%s", uj)
+	}
 }
 
-func (api *Api) createMotorcycleHandler() {
+func (api *Api) InsertMotorcycleHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	// Create a new motorcycle in the repository.
-	api.Router.POST("/api/motorcycles", func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
-		// Stub a motorcycle to be populated from the body of the motorcycleRequest.
-		motorcycleDto := dto.InsertMotorcycleDto{}
+	// Stub a motorcycle to be populated from the body of the motorcycleRequest.
+	motorcycleDto := dto.InsertMotorcycleDto{}
 
-		// Populate the motorcycle from the motorcycleRequest body.
-		json.NewDecoder(r.Body).Decode(&motorcycleDto)
+	// Populate the motorcycle from the motorcycleRequest body.
+	json.NewDecoder(r.Body).Decode(&motorcycleDto)
 
-		// Create the motorcycleRequest, process it, and get the resulting view model or error.
-		motorcycleRequest, err := request.NewInsertMotorcycleRequest(motorcycleDto.Make, motorcycleDto.Model, motorcycleDto.Year, motorcycleDto.Vin)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(400)
-			return
-		}
+	// Create the motorcycleRequest, process it, and get the resulting view model or error.
+	motorcycleRequest, err := request.NewInsertMotorcycleRequest(motorcycleDto.Make, motorcycleDto.Model, motorcycleDto.Year, motorcycleDto.Vin)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(400)
+		return
+	}
 
-		motorcycleInteractor, err := interactor.NewInsertMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(500)
-			return
-		}
+	motorcycleInteractor, err := interactor.NewInsertMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
 
-		response, err := motorcycleInteractor.Handle(motorcycleRequest)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(500)
-			return
-		}
+	response, err := motorcycleInteractor.Handle(motorcycleRequest)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
 
-		motorcyclePresenter, err := presenter.NewInsertMotorcyclePresenter()
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(500)
-			return
-		}
+	motorcyclePresenter, err := presenter.NewInsertMotorcyclePresenter()
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
 
-		viewModel, err := motorcyclePresenter.Handle(response)
-		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(500)
-			return
-		}
+	viewModel, err := motorcyclePresenter.Handle(response)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
 
-		// Marshal provided contract into JSON structure
-		uj, _ := json.Marshal(viewModel)
-		if err == nil {
-			// Write content-type, statuscode, payload
-			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("Location", "/api/motorcycles/"+fmt.Sprintf("%d", response.ID))
-			w.WriteHeader(201)
-			fmt.Fprintf(w, "%s", uj)
-		}
-	})
+	// Marshal provided contract into JSON structure
+	uj, _ := json.Marshal(viewModel)
+	if err == nil {
+		// Write content-type, statuscode, payload
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Location", "/api/motorcycles/"+fmt.Sprintf("%d", response.ID))
+		w.WriteHeader(201)
+		fmt.Fprintf(w, "%s", uj)
+	}
 }

@@ -49,7 +49,5 @@ func NewListMotorcyclesResponse(motorcycles []entity.Motorcycle, err error) (*Li
 // Validate verifies that a ListMotorcyclesResponse's fields contain valid data.
 // Returns nil if the ListMotorcyclesResponse contains valid data, otherwise an error.
 func (response ListMotorcyclesResponse) Validate() error {
-	return validation.ValidateStruct(&response,
-		// Motorcycles can be empty, but not nil
-		validation.Field(&response.Motorcycles, validation.NotNil))
+	return validation.ValidateStruct(&response)
 }

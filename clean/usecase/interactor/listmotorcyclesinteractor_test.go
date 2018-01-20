@@ -13,6 +13,7 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	//"github.com/abitofhelp/motominderapi/clean/usecase/response"
 )
 
 // TestListMotorcyclesInteractor_MotorcycleRepositoryIsNil verifies that a nil motorcycle repository fails properly.
@@ -46,7 +47,9 @@ func TestListMotorcyclesInteractor_AuthServiceIsNil(t *testing.T) {
 func TestListMotorcyclesInteractor_NotAuthenticated(t *testing.T) {
 
 	// ARRANGE
-	roles := make(map[enumeration.AuthorizationRole]bool)
+	roles := map[enumeration.AuthorizationRole]bool{
+		enumeration.AdminAuthorizationRole: true,
+	}
 	authService, _ := security.NewAuthService(false, roles)
 	repo, _ := repository.NewMotorcycleRepository()
 	motorcycleRequest, _ := request.NewListMotorcyclesRequest()
@@ -56,7 +59,8 @@ func TestListMotorcyclesInteractor_NotAuthenticated(t *testing.T) {
 	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
-	assert.NotNil(t, response.Error.Error())
+	assert.Nil(t, response.Motorcycles)
+	assert.NotNil(t, response.Error)
 }
 
 // TestListMotorcyclesInteractor_NotAuthorized verifies that an authenticated user lacking an authorization role cannot insert a motorcycle.

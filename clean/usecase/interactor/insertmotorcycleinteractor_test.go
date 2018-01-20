@@ -46,7 +46,9 @@ func TestInsertMotorcycleInteractor_AuthServiceIsNil(t *testing.T) {
 func TestInsertMotorcycleInteractor_NotAuthenticated(t *testing.T) {
 
 	// ARRANGE
-	roles := make(map[enumeration.AuthorizationRole]bool)
+	roles := map[enumeration.AuthorizationRole]bool{
+		enumeration.AdminAuthorizationRole: true,
+	}
 	authService, _ := security.NewAuthService(false, roles)
 	repo, _ := repository.NewMotorcycleRepository()
 	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
