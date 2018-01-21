@@ -15,35 +15,35 @@ import (
 	"testing"
 )
 
-// TestInsertMotorcycleInteractor_MotorcycleRepositoryIsNil verifies that a nil motorcycle repository fails properly.
-func TestInsertMotorcycleInteractor_MotorcycleRepositoryIsNil(t *testing.T) {
+// TestDeleteMotorcycleInteractor_MotorcycleRepositoryIsNil verifies that a nil motorcycle repository fails properly.
+func TestDeleteMotorcycleInteractor_MotorcycleRepositoryIsNil(t *testing.T) {
 
 	// ARRANGE
 	roles := make(map[enumeration.AuthorizationRole]bool)
 	authService, _ := security.NewAuthService(true, roles)
 
 	// ACT
-	_, err := NewInsertMotorcycleInteractor(nil, authService)
+	_, err := NewDeleteMotorcycleInteractor(nil, authService)
 
 	// ASSERT
 	assert.NotNil(t, err)
 }
 
-// TestInsertMotorcycleInteractor_MotorcycleRepositoryIsNil verifies that a nil authorization service fails properly.
-func TestInsertMotorcycleInteractor_AuthServiceIsNil(t *testing.T) {
+// TestDeleteMotorcycleInteractor_MotorcycleRepositoryIsNil verifies that a nil authorization service fails properly.
+func TestDeleteMotorcycleInteractor_AuthServiceIsNil(t *testing.T) {
 
 	// ARRANGE
 	repo, _ := repository.NewMotorcycleRepository()
 
 	// ACT
-	_, err := NewInsertMotorcycleInteractor(repo, nil)
+	_, err := NewDeleteMotorcycleInteractor(repo, nil)
 
 	// ASSERT
 	assert.NotNil(t, err)
 }
 
-// TestInsertMotorcycleInteractor_NotAuthenticated verifies that a non-authenticated user fails properly.
-func TestInsertMotorcycleInteractor_NotAuthenticated(t *testing.T) {
+// TestDeleteMotorcycleInteractor_NotAuthenticated verifies that a non-authenticated user fails properly.
+func TestDeleteMotorcycleInteractor_NotAuthenticated(t *testing.T) {
 
 	// ARRANGE
 	roles := map[enumeration.AuthorizationRole]bool{
@@ -51,19 +51,18 @@ func TestInsertMotorcycleInteractor_NotAuthenticated(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(false, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
-	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
+	motorcycleRequest, _ := request.NewDeleteMotorcycleRequest(123)
+	interactor, _ := NewDeleteMotorcycleInteractor(repo, authService)
 
 	// ACT
 	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
-	assert.True(t, response.ID == -1)
 	assert.NotNil(t, response.Error)
 }
 
-// TestInsertMotorcycleInteractor_NotAuthorized verifies that an authenticated user lacking an authorization role cannot insert a motorcycle.
-func TestInsertMotorcycleInteractor_NotAuthorized(t *testing.T) {
+// TestDeleteMotorcycleInteractor_NotAuthorized verifies that an authenticated user lacking an authorization role cannot insert a motorcycle.
+func TestDeleteMotorcycleInteractor_NotAuthorized(t *testing.T) {
 
 	// ARRANGE
 	roles := map[enumeration.AuthorizationRole]bool{
@@ -71,19 +70,18 @@ func TestInsertMotorcycleInteractor_NotAuthorized(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
-	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
+	motorcycleRequest, _ := request.NewDeleteMotorcycleRequest(123)
+	interactor, _ := NewDeleteMotorcycleInteractor(repo, authService)
 
 	// ACT
 	response, _ := interactor.Handle(motorcycleRequest)
 
 	// ASSERT
-	assert.True(t, response.ID == -1)
 	assert.NotNil(t, response.Error)
 }
 
-// TestInsertMotorcycleInteractor_Insert inserts a new motorcycle into the repository.
-func TestInsertMotorcycleInteractor_Insert(t *testing.T) {
+// TestDeleteMotorcycleInteractor_Delete deletes a motorcycle from the repository.
+func TestDeleteMotorcycleInteractor_Delete(t *testing.T) {
 
 	// ARRANGE
 	roles := map[enumeration.AuthorizationRole]bool{
@@ -91,19 +89,25 @@ func TestInsertMotorcycleInteractor_Insert(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
-	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
+
+	// Add a motorcycle so we can delete it.
+	insertInteractor, _ := NewInsertMotorcycleInteractor(repo, authService)
+	insertRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
+	insertResponse, _ := insertInteractor.Handle(insertRequest)
+
+	deleteRequest, _ := request.NewDeleteMotorcycleRequest(insertResponse.ID)
+	deleteInteractor, _ := NewDeleteMotorcycleInteractor(repo, authService)
 
 	// ACT
-	response, _ := interactor.Handle(motorcycleRequest)
+	deleteResponse, _ := deleteInteractor.Handle(deleteRequest)
 
 	// ASSERT
-	assert.True(t, response.ID > 0)
-	assert.Nil(t, response.Error)
+	assert.True(t, deleteResponse.ID == insertResponse.ID)
+	assert.Nil(t, deleteResponse.Error)
 }
 
-// TestInsertMotorcycleInteractor_Insert_VinAlreadyExists verifies that a duplicate motorcycle will not be created.
-func TestInsertMotorcycleInteractor_Insert_VinAlreadyExists(t *testing.T) {
+// TestDeleteMotorcycleInteractor_NotExist attempts to delete a motorcycle from the repository that does not exist.
+func TestDeleteMotorcycleInteractor_NotExist(t *testing.T) {
 
 	// ARRANGE
 	roles := map[enumeration.AuthorizationRole]bool{
@@ -111,13 +115,14 @@ func TestInsertMotorcycleInteractor_Insert_VinAlreadyExists(t *testing.T) {
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
-	motorcycleRequest, _ := request.NewInsertMotorcycleRequest("Honda", "Shadow", 2006, "01234567890123456")
-	interactor, _ := NewInsertMotorcycleInteractor(repo, authService)
-	interactor.Handle(motorcycleRequest)
+
+	deleteRequest, _ := request.NewDeleteMotorcycleRequest(123)
+	deleteInteractor, _ := NewDeleteMotorcycleInteractor(repo, authService)
 
 	// ACT
-	response, _ := interactor.Handle(motorcycleRequest)
+	deleteResponse, _ := deleteInteractor.Handle(deleteRequest)
 
 	// ASSERT
-	assert.NotNil(t, response.Error)
+	assert.True(t, deleteResponse.ID == 123)
+	assert.NotNil(t, deleteResponse.Error)
 }

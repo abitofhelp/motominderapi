@@ -162,7 +162,7 @@ func TestMotorcycleRepository_Delete(t *testing.T) {
 	moto, _ := repo.Insert(motorcycle)
 
 	// ACT
-	repo.Delete(moto)
+	repo.Delete(moto.ID)
 
 	// ASSERT
 	assert.True(t, len(repo.Motorcycles) == 0)
@@ -178,7 +178,7 @@ func TestMotorcycleRepository_Delete_NotExist(t *testing.T) {
 	motorcycle.ID = 123
 
 	// ACT
-	err := repo.Delete(motorcycle)
+	err := repo.Delete(motorcycle.ID)
 
 	// ASSERT
 	assert.NotNil(t, err)

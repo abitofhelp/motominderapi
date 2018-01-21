@@ -62,11 +62,11 @@ func TestApi_ListMotorcycles_NotEmpty(t *testing.T) {
 	}
 
 	authService, _ := security.NewAuthService(true, roles)
-	repository, _ := repository.NewMotorcycleRepository()
+	motorcycleRepository, _ := repository.NewMotorcycleRepository()
 	router := httprouter.New()
 
 	// Create an instance of the API web service.
-	ourApi, err := NewApi(roles, authService, repository, router)
+	ourApi, err := NewApi(roles, authService, motorcycleRepository, router)
 	if err != nil {
 		println("Failed to create an instance of the API web service: &s", err.Error())
 		return

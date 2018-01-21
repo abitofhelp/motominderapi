@@ -11,7 +11,7 @@ type MotorcycleRepository interface {
 	Insert(motorcycle *entity.Motorcycle) (*entity.Motorcycle, error)
 	FindByVin(vin string) (*entity.Motorcycle, error)
 	Update(motorcycle *entity.Motorcycle) (*entity.Motorcycle, error)
-	Delete(motorcycle *entity.Motorcycle) error
+	Delete(id int) error
 	FindByID(id int) (*entity.Motorcycle, error)
 	Save() error
 	Validate() error

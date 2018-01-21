@@ -6,20 +6,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-// InsertMotorcycleResponse is a simple dto containing the response data from the InsertMotorcycleInteractor.
-type InsertMotorcycleResponse struct {
+// DeleteMotorcycleResponse is a simple dto containing the response data from the DeleteMotorcycleInteractor.
+type DeleteMotorcycleResponse struct {
+	// ID will be set to the value that was requested to be deleted.
 	ID    int   `json:"id"`
 	Error error `json:"error"`
 }
 
-// NewInsertMotorcycleResponse creates a new instance of a InsertMotorcycleResponse.
-// Returns (nil, error) when there is an error, otherwise (InsertMotorcycleResponse, nil).
-func NewInsertMotorcycleResponse(id int, err error) (*InsertMotorcycleResponse, error) {
+// NewDeleteMotorcycleResponse creates a new instance of a DeleteMotorcycleResponse.
+// Returns (nil, error) when there is an error, otherwise (DeleteMotorcycleResponse, nil).
+func NewDeleteMotorcycleResponse(id int, err error) (*DeleteMotorcycleResponse, error) {
 
 	// We return a (nil, error) only when validation of the response message fails, not for whether the
 	// response message indicates failure.
 
-	motorcycleResponse := &InsertMotorcycleResponse{
+	motorcycleResponse := &DeleteMotorcycleResponse{
 		ID:    id,
 		Error: err,
 	}
@@ -45,10 +46,10 @@ func NewInsertMotorcycleResponse(id int, err error) (*InsertMotorcycleResponse, 
 	return motorcycleResponse, nil
 }
 
-// Validate verifies that a InsertMotorcycleResponse's fields contain valid data.
-// Returns nil if the InsertMotorcycleResponse contains valid data, otherwise an error.
-func (response InsertMotorcycleResponse) Validate() error {
+// Validate verifies that a DeleteMotorcycleResponse's fields contain valid data.
+// Returns nil if the DeleteMotorcycleResponse contains valid data, otherwise an error.
+func (response DeleteMotorcycleResponse) Validate() error {
 	return validation.ValidateStruct(&response,
 		// ID is required and it must be non-zero
-		validation.Field(&response.ID, validation.Required))
+		validation.Field(&response.ID, validation.Required, validation.Min(1)))
 }

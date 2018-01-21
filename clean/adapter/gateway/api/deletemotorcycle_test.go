@@ -8,18 +8,17 @@ import (
 	"strconv"
 	"testing"
 
-	"bytes"
-
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/repository"
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/security"
+	"github.com/abitofhelp/motominderapi/clean/adapter/viewmodel"
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 )
 
-// TestApi_InsertMotorcycle verifies a successful response after inserting a motorcycle.
-func TestApi_InsertMotorcycle(t *testing.T) {
+// TestApi_DeleteMotorcycle verifies a successful response after inserting a motorcycle.
+func TestApi_DeleteMotorcycle(t *testing.T) {
 
 	// ARRANGE
 
@@ -29,34 +28,41 @@ func TestApi_InsertMotorcycle(t *testing.T) {
 	}
 
 	authService, _ := security.NewAuthService(true, roles)
-	motorcycleRepository, _ := repository.NewMotorcycleRepository()
+	repos, _ := repository.NewMotorcycleRepository()
 	router := httprouter.New()
 
 	// Create an instance of the API web service.
-	ourApi, err := NewApi(roles, authService, motorcycleRepository, router)
+	ourApi, err := NewApi(roles, authService, repos, router)
 	if err != nil {
 		println("Failed to create an instance of the API web service: &s", err.Error())
 		return
 	}
 
+	// Insert a motorcycle into the repository so it can be deleted.
 	motorcycle, _ := entity.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
+	insertResponse, _ := InsertMotorcycle(ourApi, motorcycle)
+
+	//  Get the response data for the insertion.
+	insertionViewModel := viewmodel.InsertMotorcycleViewModel{}
+	json.NewDecoder(insertResponse.Body).Decode(&insertionViewModel)
 
 	// ACT
-	resp, err := InsertMotorcycle(ourApi, motorcycle)
+	resp, err := DeleteMotorcycle(ourApi, insertionViewModel.ID)
 
 	// ASSERT
-	assert.True(t, resp.StatusCode == 201)
-	assert.Equal(t, "/api/motorcycles/1", resp.Header.Get("Location"))
-	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
+	assert.True(t, resp.StatusCode == 204)
 }
 
-// InsertMotorcycle inserts a motorcycle into the repository using the RESTful API.
+// DeleteMotorcycle deletes a motorcycle from the repository using the RESTful API.
 // Returns (*response, nil) on success, otherwise (nil, error).
-func InsertMotorcycle(ourApi *Api, motorcycle *entity.Motorcycle) (*http.Response, error) {
+func DeleteMotorcycle(ourApi *Api, id int) (*http.Response, error) {
 	// An http handler wrapper around httprouter's handler.  It permits us to use
 	// the test server.
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ourApi.InsertMotorcycleHandler(w, r, httprouter.Params{})
+		ourApi.DeleteMotorcycleHandler(w, r, httprouter.Params{httprouter.Param{
+			Key:   "id",
+			Value: strconv.Itoa(id),
+		}})
 	})
 
 	server := httptest.NewServer(handler)
@@ -64,15 +70,10 @@ func InsertMotorcycle(ourApi *Api, motorcycle *entity.Motorcycle) (*http.Respons
 
 	client := &http.Client{}
 
-	motorcycleJson, _ := json.Marshal(motorcycle)
-
-	req, err := http.NewRequest("POST", server.URL, bytes.NewBuffer(motorcycleJson))
+	req, err := http.NewRequest("DELETE", server.URL+"/"+strconv.Itoa(id), nil)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Content-Length", strconv.Itoa(len(motorcycleJson)))
 
 	return client.Do(req)
 }

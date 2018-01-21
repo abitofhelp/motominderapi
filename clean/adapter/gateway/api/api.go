@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	// Third party packages
 	"github.com/julienschmidt/httprouter"
@@ -63,6 +64,8 @@ func NewApi(roles map[enumeration.AuthorizationRole]bool, authService *security.
 	return api, nil
 }
 
+// configureRouter sets up the router's handlers and endpoints.
+// Returns nil on success, otherwise error.
 func (api *Api) configureRouter() error {
 
 	// Set up the handler to get a list of motorcycles from the repository.
@@ -71,10 +74,14 @@ func (api *Api) configureRouter() error {
 	// Set up the handler to insert a new motorcycle into the repository.
 	api.Router.POST("/api/motorcycles", api.InsertMotorcycleHandler)
 
+	// Set up the handler to delete a motorcycle from the repository.
+	api.Router.DELETE("/api/motorcycles/:id", api.DeleteMotorcycleHandler)
+
 	return nil
 }
 
 // Start launches the web service.
+// Returns nil on success, otherwise error.
 func (api *Api) Start() error {
 	println("Starting the API server...")
 	log.Fatal(http.ListenAndServe(":8080", api.Router))
@@ -82,6 +89,7 @@ func (api *Api) Start() error {
 }
 
 // Stop terminates the web service.
+// Returns nil on success, otherwise error.
 func (api *Api) Stop() error {
 	println("Stopping the API server...")
 	return nil
@@ -89,6 +97,7 @@ func (api *Api) Stop() error {
 
 // ListMotorcyclesHandler processes requests to get a list of motorcycles from the repository.
 func (api *Api) ListMotorcyclesHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+
 	// Create the listRequest, process it, and get the resulting view model or error.
 	listRequest, err := request.NewListMotorcyclesRequest()
 	if err != nil {
@@ -135,8 +144,63 @@ func (api *Api) ListMotorcyclesHandler(w http.ResponseWriter, r *http.Request, _
 	}
 }
 
+// DeleteMotorcycleHandler removes a motorcycle from the respository.
+func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	id, err := strconv.Atoi(p.ByName("id"))
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(400)
+		return
+	}
+
+	// Create the motorcycleRequest, process it, and get the resulting view model or error.
+	deleteRequest, err := request.NewDeleteMotorcycleRequest(id)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(400)
+		return
+	}
+
+	deleteInteractor, err := interactor.NewDeleteMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
+
+	deleteResponse, err := deleteInteractor.Handle(deleteRequest)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
+
+	deletePresenter, err := presenter.NewDeleteMotorcyclePresenter()
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
+
+	deleteViewModel, err := deletePresenter.Handle(deleteResponse)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(500)
+		return
+	}
+
+	// Marshal provided contract into JSON structure
+	uj, _ := json.Marshal(deleteViewModel)
+	if err == nil {
+		// Write content-type, statuscode, payload
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(204)
+		fmt.Fprintf(w, "%s", uj)
+	}
+}
+
+// InsertMotorcycleHandler adds a new motorcycle to the repository.
 func (api *Api) InsertMotorcycleHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	// Create a new motorcycle in the repository.
 
 	// Stub a motorcycle to be populated from the body of the motorcycleRequest.
 	motorcycleDto := dto.InsertMotorcycleDto{}

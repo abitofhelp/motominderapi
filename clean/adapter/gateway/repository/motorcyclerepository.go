@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-// nextID is the next primary key ID value for an object being inserted into the repository.
-var nextID = 0
-
 // MotorcycleRepository provides CRUD operations against a collection of motorcycles.
 type MotorcycleRepository struct {
+	// NextID is the next primary key ID value for an object being inserted into the repository.
+	NextID int `json:"nextId"`
+
 	// These items are unordered.
 	Motorcycles []entity.Motorcycle `json:"motorcycles"`
 }
@@ -24,6 +24,9 @@ type MotorcycleRepository struct {
 // Returns (nil, error) when there is an error, otherwise a (MotorcycleRepository, nil).
 func NewMotorcycleRepository() (*MotorcycleRepository, error) {
 	motorcycleRepository := &MotorcycleRepository{
+
+		// nextID is the next primary key ID value for an object being inserted into the repository.
+		NextID: 0,
 
 		// Ensure that we create an empty slice rather than the default for []entity.Motorcycle, which is a null pointer.
 		Motorcycles: make([]entity.Motorcycle, 0),
@@ -155,9 +158,9 @@ func (repo *MotorcycleRepository) FindByVin(vin string) (*entity.Motorcycle, err
 // Delete an existing motorcycle from the repository.
 // If the motorcycle does not exist, an error is returned.
 // Returns nil on success, otherwise an error.
-func (repo *MotorcycleRepository) Delete(motorcycle *entity.Motorcycle) error {
+func (repo *MotorcycleRepository) Delete(id int) error {
 	// Find the motorcycle, so it can be updated in the repository.
-	i, _ := repo.findByID(motorcycle.ID)
+	i, _ := repo.findByID(id)
 	if i == constant.InvalidEntityID {
 		return errors.New("cannot delete a motorcycle that does not exist")
 	}
@@ -183,6 +186,6 @@ func (repo *MotorcycleRepository) Save() error {
 // GetNextID determines the next primary key ID value when an item is inserted into the repository.
 // Returns the next ID.
 func (repo *MotorcycleRepository) getNextID() int {
-	nextID = nextID + 1
-	return nextID
+	repo.NextID = repo.NextID + 1
+	return repo.NextID
 }
