@@ -1,5 +1,5 @@
 // Package enumeration defines enumerations for the application.
-package enumeration
+package authorizationrole
 
 // AuthorizationRole is an authorization given to an authenticated user to access a resource.
 type AuthorizationRole int

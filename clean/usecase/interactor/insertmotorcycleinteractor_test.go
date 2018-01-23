@@ -9,7 +9,7 @@ package interactor
 import (
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/repository"
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/security"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -19,7 +19,7 @@ import (
 func TestInsertMotorcycleInteractor_MotorcycleRepositoryIsNil(t *testing.T) {
 
 	// ARRANGE
-	roles := make(map[enumeration.AuthorizationRole]bool)
+	roles := make(map[authorizationrole.AuthorizationRole]bool)
 	authService, _ := security.NewAuthService(true, roles)
 
 	// ACT
@@ -46,8 +46,8 @@ func TestInsertMotorcycleInteractor_AuthServiceIsNil(t *testing.T) {
 func TestInsertMotorcycleInteractor_NotAuthenticated(t *testing.T) {
 
 	// ARRANGE
-	roles := map[enumeration.AuthorizationRole]bool{
-		enumeration.AdminAuthorizationRole: true,
+	roles := map[authorizationrole.AuthorizationRole]bool{
+		authorizationrole.AdminAuthorizationRole: true,
 	}
 	authService, _ := security.NewAuthService(false, roles)
 	repo, _ := repository.NewMotorcycleRepository()
@@ -66,8 +66,8 @@ func TestInsertMotorcycleInteractor_NotAuthenticated(t *testing.T) {
 func TestInsertMotorcycleInteractor_NotAuthorized(t *testing.T) {
 
 	// ARRANGE
-	roles := map[enumeration.AuthorizationRole]bool{
-		enumeration.AdminAuthorizationRole: false,
+	roles := map[authorizationrole.AuthorizationRole]bool{
+		authorizationrole.AdminAuthorizationRole: false,
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
@@ -86,8 +86,8 @@ func TestInsertMotorcycleInteractor_NotAuthorized(t *testing.T) {
 func TestInsertMotorcycleInteractor_Insert(t *testing.T) {
 
 	// ARRANGE
-	roles := map[enumeration.AuthorizationRole]bool{
-		enumeration.AdminAuthorizationRole: true,
+	roles := map[authorizationrole.AuthorizationRole]bool{
+		authorizationrole.AdminAuthorizationRole: true,
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()
@@ -106,8 +106,8 @@ func TestInsertMotorcycleInteractor_Insert(t *testing.T) {
 func TestInsertMotorcycleInteractor_Insert_VinAlreadyExists(t *testing.T) {
 
 	// ARRANGE
-	roles := map[enumeration.AuthorizationRole]bool{
-		enumeration.AdminAuthorizationRole: true,
+	roles := map[authorizationrole.AuthorizationRole]bool{
+		authorizationrole.AdminAuthorizationRole: true,
 	}
 	authService, _ := security.NewAuthService(true, roles)
 	repo, _ := repository.NewMotorcycleRepository()

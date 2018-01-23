@@ -5,7 +5,7 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/api"
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/repository"
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/security"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -13,8 +13,8 @@ import (
 func main() {
 
 	// Configure the application...
-	roles := map[enumeration.AuthorizationRole]bool{
-		enumeration.AdminAuthorizationRole: true,
+	roles := map[authorizationrole.AuthorizationRole]bool{
+		authorizationrole.AdminAuthorizationRole: true,
 	}
 
 	authService, _ := security.NewAuthService(true, roles)

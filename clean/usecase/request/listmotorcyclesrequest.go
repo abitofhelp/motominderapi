@@ -2,7 +2,7 @@
 package request
 
 import (
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/go-ozzo/ozzo-validation"
 	errors "github.com/pjebs/jsonerror"
 )
@@ -32,7 +32,7 @@ func (request ListMotorcyclesRequest) Validate() error {
 	err := validation.ValidateStruct(&request)
 
 	if err != nil {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	return nil

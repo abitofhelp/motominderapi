@@ -5,20 +5,23 @@ import (
 	// Standard library packages
 	"encoding/json"
 	"fmt"
-	errors "github.com/pjebs/jsonerror"
-	"log"
 	"net/http"
+	"os"
 	"strconv"
+
+	errors "github.com/pjebs/jsonerror"
 
 	// Third party packages
 	"github.com/julienschmidt/httprouter"
+	log "github.com/sirupsen/logrus"
 
 	// Motominder's entity packages
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/api/dto"
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/repository"
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/security"
 	"github.com/abitofhelp/motominderapi/clean/adapter/presenter"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/interactor"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/go-ozzo/ozzo-validation"
@@ -26,7 +29,7 @@ import (
 
 // Api is a web service.
 type Api struct {
-	Roles                map[enumeration.AuthorizationRole]bool
+	Roles                map[authorizationrole.AuthorizationRole]bool
 	AuthService          *security.AuthService
 	MotorcycleRepository *repository.MotorcycleRepository
 	Router               *httprouter.Router
@@ -42,7 +45,7 @@ func (api Api) Validate() error {
 		validation.Field(&api.Router, validation.Required))
 
 	if err != nil {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	return nil
@@ -50,7 +53,7 @@ func (api Api) Validate() error {
 
 // NewApi creates a new instance of an Api.
 // Returns (an instance of APi, nil), otherwise (nil, error)
-func NewApi(roles map[enumeration.AuthorizationRole]bool, authService *security.AuthService, motorcycleRepository *repository.MotorcycleRepository, router *httprouter.Router) (*Api, error) {
+func NewApi(roles map[authorizationrole.AuthorizationRole]bool, authService *security.AuthService, motorcycleRepository *repository.MotorcycleRepository, router *httprouter.Router) (*Api, error) {
 
 	api := &Api{
 		Roles:                roles,
@@ -58,6 +61,9 @@ func NewApi(roles map[enumeration.AuthorizationRole]bool, authService *security.
 		MotorcycleRepository: motorcycleRepository,
 		Router:               router,
 	}
+
+	// Initialize logging
+	api.init()
 
 	err := api.Validate()
 	if err != nil {
@@ -109,54 +115,67 @@ func (api *Api) ListMotorcyclesHandler(w http.ResponseWriter, r *http.Request, _
 	listRequest, err := request.NewListMotorcyclesRequest()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	listInteractor, err := interactor.NewListMotorcyclesInteractor(api.MotorcycleRepository, api.AuthService)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	listResponse, err := listInteractor.Handle(listRequest)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	listPresenter, err := presenter.NewListMotorcyclesPresenter()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	viewModel, err := listPresenter.Handle(listResponse)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	// Marshal provided contract into JSON structure
 	uj, err := json.Marshal(viewModel)
-	if err == nil {
-		// Write content-type, statuscode, payload
+	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "%s", uj)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
+		return
 	}
+
+	// Write content-type, status code, payload
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%s", uj)
+
 }
 
 // DeleteMotorcycleHandler removes a motorcycle from the respository.
 func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+
 	id, err := strconv.Atoi(p.ByName("id"))
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
@@ -164,46 +183,56 @@ func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 	deleteRequest, err := request.NewDeleteMotorcycleRequest(id)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	deleteInteractor, err := interactor.NewDeleteMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	deleteResponse, err := deleteInteractor.Handle(deleteRequest)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	deletePresenter, err := presenter.NewDeleteMotorcyclePresenter()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	deleteViewModel, err := deletePresenter.Handle(deleteResponse)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	// Marshal provided contract into JSON structure
 	uj, _ := json.Marshal(deleteViewModel)
-	if err == nil {
-		// Write content-type, statuscode, payload
+	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNoContent)
-		fmt.Fprintf(w, "%s", uj)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
+		return
 	}
+
+	// Write content-type, status code, payload
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+	fmt.Fprintf(w, "%s", uj)
 }
 
 // InsertMotorcycleHandler adds a new motorcycle to the repository.
@@ -219,45 +248,67 @@ func (api *Api) InsertMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 	motorcycleRequest, err := request.NewInsertMotorcycleRequest(motorcycleDto.Make, motorcycleDto.Model, motorcycleDto.Year, motorcycleDto.Vin)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	motorcycleInteractor, err := interactor.NewInsertMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	response, err := motorcycleInteractor.Handle(motorcycleRequest)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	motorcyclePresenter, err := presenter.NewInsertMotorcyclePresenter()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	viewModel, err := motorcyclePresenter.Handle(response)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
 		return
 	}
 
 	// Marshal provided contract into JSON structure
 	uj, _ := json.Marshal(viewModel)
-	if err == nil {
-		// Write content-type, statuscode, payload
+	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Location", "/api/motorcycles/"+fmt.Sprintf("%d", response.ID))
-		w.WriteHeader(201)
-		fmt.Fprintf(w, "%s", uj)
+		w.WriteHeader(operationstatus.ToHttpStatus(err.(errors.JE).Code))
+		log.WithError(err)
+		return
 	}
+
+	// Write content-type, statuscode, payload
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Location", "/api/motorcycles/"+fmt.Sprintf("%d", response.ID))
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, "%s", uj)
+}
+
+func (api *Api) init() {
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer
+	log.SetOutput(os.Stdout)
+
+	// Only log the warning severity or above.
+	log.SetLevel(log.WarnLevel)
 }

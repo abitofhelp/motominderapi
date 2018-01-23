@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/go-ozzo/ozzo-validation"
 )
 
@@ -32,7 +32,7 @@ func IsInvalidManufacturer(value interface{}) error {
 
 	// Test for invalid manufacturers
 	if strings.EqualFold(s, "Ford") {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), "cannot be Ford")
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), "cannot be Ford")
 	}
 	return nil
 }
@@ -43,7 +43,7 @@ func Is17Characters(value interface{}) error {
 	s, _ := value.(string)
 
 	if len(s) != constant.VinLength {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), "must contain 17 characters")
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), "must contain 17 characters")
 	}
 
 	return nil
@@ -64,7 +64,7 @@ func (m Motorcycle) Validate() error {
 	)
 
 	if err != nil {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	return nil

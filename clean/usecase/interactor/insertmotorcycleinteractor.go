@@ -12,7 +12,8 @@ import (
 
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	errors "github.com/pjebs/jsonerror"
@@ -98,7 +99,7 @@ func (interactor InsertMotorcycleInteractor) Validate() error {
 		validation.Field(&interactor.AuthService, validation.Required))
 
 	if err != nil {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	return nil
@@ -110,12 +111,12 @@ func (interactor InsertMotorcycleInteractor) Validate() error {
 func (interactor *InsertMotorcycleInteractor) Handle(requestMessage *request.InsertMotorcycleRequest) (*response.InsertMotorcycleResponse, error) {
 	// Verify that the user has been properly authenticated.
 	if !interactor.AuthService.IsAuthenticated() {
-		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New(enumeration.StatusUnauthorized, enumeration.StatusText(enumeration.StatusUnauthorized), "insert operation failed due to not being authenticated, so please contact your system administrator"))
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New(operationstatus.StatusUnauthorized, operationstatus.StatusText(operationstatus.StatusUnauthorized), "insert operation failed due to not being authenticated, so please contact your system administrator"))
 	}
 
 	// Verify that the user has the necessary authorizations.
-	if !interactor.AuthService.IsAuthorized(enumeration.AdminAuthorizationRole) {
-		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New(enumeration.StatusForbidden, enumeration.StatusText(enumeration.StatusForbidden), "insert operation failed due to not being authorized, so please contact your system administrator"))
+	if !interactor.AuthService.IsAuthorized(authorizationrole.AdminAuthorizationRole) {
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New(operationstatus.StatusForbidden, operationstatus.StatusText(operationstatus.StatusForbidden), "insert operation failed due to not being authorized, so please contact your system administrator"))
 	}
 
 	// Create a new Motorcycle entity.

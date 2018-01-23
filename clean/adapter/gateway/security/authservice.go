@@ -2,7 +2,8 @@
 package security
 
 import (
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/go-ozzo/ozzo-validation"
 	errors "github.com/pjebs/jsonerror"
 )
@@ -10,7 +11,7 @@ import (
 // AuthService is a contract that provides authentication and authorization services.
 type AuthService struct {
 	Authenticated bool
-	Roles         map[enumeration.AuthorizationRole]bool
+	Roles         map[authorizationrole.AuthorizationRole]bool
 }
 
 // Validate verifies that an AuthService's fields contain valid data.
@@ -24,7 +25,7 @@ func (authService AuthService) Validate() error {
 	)
 
 	if err != nil {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	return nil
@@ -32,7 +33,7 @@ func (authService AuthService) Validate() error {
 
 // NewAuthService creates a new instance of an AuthService.
 // Returns (nil, error) when there is an error, otherwise (authService, nil).
-func NewAuthService(authenticated bool, roles map[enumeration.AuthorizationRole]bool) (*AuthService, error) {
+func NewAuthService(authenticated bool, roles map[authorizationrole.AuthorizationRole]bool) (*AuthService, error) {
 
 	authService := &AuthService{
 		Authenticated: authenticated,
@@ -41,7 +42,7 @@ func NewAuthService(authenticated bool, roles map[enumeration.AuthorizationRole]
 
 	err := authService.Validate()
 	if err != nil {
-		return nil, errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return nil, errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	// All okay
@@ -57,6 +58,6 @@ func (authService *AuthService) IsAuthenticated() bool {
 
 // IsAuthorized determines whether the User possesses the required authorization role(s).
 // Returns true if "Admin" is in the roles, otherwise false.
-func (authService *AuthService) IsAuthorized(role enumeration.AuthorizationRole) bool {
-	return authService.Roles[enumeration.AdminAuthorizationRole]
+func (authService *AuthService) IsAuthorized(role authorizationrole.AuthorizationRole) bool {
+	return authService.Roles[authorizationrole.AdminAuthorizationRole]
 }

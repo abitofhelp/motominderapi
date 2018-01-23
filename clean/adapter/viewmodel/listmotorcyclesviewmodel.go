@@ -4,7 +4,7 @@ package viewmodel
 import (
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/api/dto"
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	"github.com/go-ozzo/ozzo-validation"
 	errors "github.com/pjebs/jsonerror"
@@ -52,7 +52,7 @@ func NewListMotorcyclesViewModel(motorcycles []entity.Motorcycle, message string
 		ecol.AddErrors(viewModel.Error, msgErr)
 
 		return nil, errors.New(viewModel.Error.(errors.JE).Code,
-			enumeration.StatusText(viewModel.Error.(errors.JE).Code), ecol.Error())
+			operationstatus.StatusText(viewModel.Error.(errors.JE).Code), ecol.Error())
 	}
 
 	// If we have a response message that indicates success, but validation failed, we will return the validation error.
@@ -91,7 +91,7 @@ func (viewmodel ListMotorcyclesViewModel) Validate() error {
 	)
 
 	if err != nil {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	return nil

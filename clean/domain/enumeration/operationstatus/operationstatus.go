@@ -1,5 +1,7 @@
 // Package enumeration defines enumerations for the application.
-package enumeration
+package operationstatus
+
+import "github.com/golang/go/src/pkg/net/http"
 
 // OperationStatus is the status of a repository operation.
 type OperationStatus int
@@ -48,4 +50,38 @@ var statusText = map[int]string{
 // string if the code is unknown.
 func StatusText(code int) string {
 	return statusText[code]
+}
+
+// MapOperationStatusToHttpStatus maps operation status values to HTTP status codes.  There will not always be a 1:1 correspondence.
+func ToHttpStatus(status int) int {
+	switch status {
+	case StatusOK:
+		return http.StatusOK
+	case StatusCreated:
+		return http.StatusCreated
+	case StatusNoContent:
+		return http.StatusNoContent
+	case StatusFound:
+		return http.StatusFound
+	case StatusNotModified:
+		return http.StatusNotModified
+	case StatusBadRequest:
+		return http.StatusBadRequest
+	case StatusUnauthorized:
+		return http.StatusUnauthorized
+	case StatusForbidden:
+		return http.StatusForbidden
+	case StatusNotFound:
+		return http.StatusNotFound
+	case StatusConflict:
+		return http.StatusConflict
+	case StatusPreconditionFailed:
+		return http.StatusPreconditionFailed
+	case StatusInternalServerError:
+		return http.StatusInternalServerError
+	case StatusNotImplemented:
+		return http.StatusNotImplemented
+	default:
+		return http.StatusNotImplemented
+	}
 }

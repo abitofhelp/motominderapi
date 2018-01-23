@@ -12,7 +12,8 @@ import (
 
 	errors "github.com/pjebs/jsonerror"
 
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 )
@@ -88,7 +89,7 @@ func (interactor ListMotorcyclesInteractor) Validate() error {
 		validation.Field(&interactor.AuthService, validation.Required))
 
 	if err != nil {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	return nil
@@ -100,12 +101,12 @@ func (interactor ListMotorcyclesInteractor) Validate() error {
 func (interactor *ListMotorcyclesInteractor) Handle(requestMessage *request.ListMotorcyclesRequest) (*response.ListMotorcyclesResponse, error) {
 	// Verify that the user has been properly authenticated.
 	if !interactor.AuthService.IsAuthenticated() {
-		return response.NewListMotorcyclesResponse(nil, errors.New(enumeration.StatusUnauthorized, enumeration.StatusText(enumeration.StatusUnauthorized), "insert operation failed due to not being authenticated, so please contact your system administrator"))
+		return response.NewListMotorcyclesResponse(nil, errors.New(operationstatus.StatusUnauthorized, operationstatus.StatusText(operationstatus.StatusUnauthorized), "insert operation failed due to not being authenticated, so please contact your system administrator"))
 	}
 
 	// Verify that the user has the necessary authorizations.
-	if !interactor.AuthService.IsAuthorized(enumeration.AdminAuthorizationRole) {
-		return response.NewListMotorcyclesResponse(nil, errors.New(enumeration.StatusForbidden, enumeration.StatusText(enumeration.StatusForbidden), "insert operation failed due to not being authorized, so please contact your system administrator"))
+	if !interactor.AuthService.IsAuthorized(authorizationrole.AdminAuthorizationRole) {
+		return response.NewListMotorcyclesResponse(nil, errors.New(operationstatus.StatusForbidden, operationstatus.StatusText(operationstatus.StatusForbidden), "insert operation failed due to not being authorized, so please contact your system administrator"))
 	}
 
 	// Get the list of motorcycles from the repository.

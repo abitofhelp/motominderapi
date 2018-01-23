@@ -10,7 +10,8 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/domain/contract"
 	"github.com/go-ozzo/ozzo-validation"
 
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	errors "github.com/pjebs/jsonerror"
@@ -95,7 +96,7 @@ func (interactor DeleteMotorcycleInteractor) Validate() error {
 		validation.Field(&interactor.AuthService, validation.Required))
 
 	if err != nil {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	return nil
@@ -107,12 +108,12 @@ func (interactor DeleteMotorcycleInteractor) Validate() error {
 func (interactor *DeleteMotorcycleInteractor) Handle(requestMessage *request.DeleteMotorcycleRequest) (*response.DeleteMotorcycleResponse, error) {
 	// Verify that the user has been properly authenticated.
 	if !interactor.AuthService.IsAuthenticated() {
-		return response.NewDeleteMotorcycleResponse(requestMessage.ID, errors.New(enumeration.StatusUnauthorized, enumeration.StatusText(enumeration.StatusUnauthorized), "delete operation failed due to not being authenticated, so please contact your system administrator"))
+		return response.NewDeleteMotorcycleResponse(requestMessage.ID, errors.New(operationstatus.StatusUnauthorized, operationstatus.StatusText(operationstatus.StatusUnauthorized), "delete operation failed due to not being authenticated, so please contact your system administrator"))
 	}
 
 	// Verify that the user has the necessary authorizations.
-	if !interactor.AuthService.IsAuthorized(enumeration.AdminAuthorizationRole) {
-		return response.NewDeleteMotorcycleResponse(requestMessage.ID, errors.New(enumeration.StatusForbidden, enumeration.StatusText(enumeration.StatusForbidden), "insert operation failed due to not being authorized, so please contact your system administrator"))
+	if !interactor.AuthService.IsAuthorized(authorizationrole.AdminAuthorizationRole) {
+		return response.NewDeleteMotorcycleResponse(requestMessage.ID, errors.New(operationstatus.StatusForbidden, operationstatus.StatusText(operationstatus.StatusForbidden), "insert operation failed due to not being authorized, so please contact your system administrator"))
 	}
 
 	// Delete the motorcycle with ID from the repository.

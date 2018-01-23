@@ -2,7 +2,7 @@
 package response
 
 import (
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/go-ozzo/ozzo-validation"
 	errors "github.com/pjebs/jsonerror"
 )
@@ -33,7 +33,7 @@ func NewInsertMotorcycleResponse(id int, err error) (*InsertMotorcycleResponse, 
 		ecol.AddErrors(motorcycleResponse.Error, msgErr)
 
 		return nil, errors.New(motorcycleResponse.Error.(errors.JE).Code,
-			enumeration.StatusText(motorcycleResponse.Error.(errors.JE).Code), ecol.Error())
+			operationstatus.StatusText(motorcycleResponse.Error.(errors.JE).Code), ecol.Error())
 	}
 
 	// If we have a response message that indicates success, but validation failed, we will return the validation error.
@@ -58,7 +58,7 @@ func (response InsertMotorcycleResponse) Validate() error {
 		validation.Field(&response.ID, validation.Required))
 
 	if err != nil {
-		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
 	}
 
 	return nil
