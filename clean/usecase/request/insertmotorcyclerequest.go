@@ -3,7 +3,9 @@ package request
 
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/go-ozzo/ozzo-validation"
+	errors "github.com/pjebs/jsonerror"
 )
 
 // InsertMotorcycleRequest is a simple dto containing the required data for the InsertMotorcycleInteractor.
@@ -37,7 +39,7 @@ func NewInsertMotorcycleRequest(make string, model string, year int, vin string)
 // Validate verifies that a InsertMotorcycleRequest's fields contain valid data.
 // Returns (an instance of InsertMotorcycleRequest, nil) on success, otherwise (nil, error)
 func (request InsertMotorcycleRequest) Validate() error {
-	return validation.ValidateStruct(&request,
+	err := validation.ValidateStruct(&request,
 		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)
 		validation.Field(&request.Make, validation.Required, validation.Length(1, 20)),
 		// Model cannot be nil, cannot be empty, and max length of 20
@@ -47,4 +49,10 @@ func (request InsertMotorcycleRequest) Validate() error {
 		// Vin cannot be nil, cannot be empty, and has a length of 17
 		validation.Field(&request.Vin, validation.Required, validation.By(entity.Is17Characters)),
 	)
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }

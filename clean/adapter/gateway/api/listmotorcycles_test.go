@@ -48,7 +48,7 @@ func TestApi_ListMotorcycles_Empty(t *testing.T) {
 	resp, err := http.Get(server.URL)
 
 	// ASSERT
-	assert.True(t, resp.StatusCode == 200)
+	assert.True(t, resp.StatusCode == http.StatusOK)
 }
 
 // TestApi_ListMotorcycles_NotEmpty verifies a successful response with a list of motorcycles.
@@ -82,7 +82,7 @@ func TestApi_ListMotorcycles_NotEmpty(t *testing.T) {
 	resp, err := GetMotorcycles(ourApi)
 
 	// ASSERT
-	assert.True(t, resp.StatusCode == 200)
+	assert.True(t, resp.StatusCode == http.StatusOK)
 }
 
 // GetMotorcycles retrieves the list of motorcycles from the repository using the RESTful API.

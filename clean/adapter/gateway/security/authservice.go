@@ -4,6 +4,7 @@ package security
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/go-ozzo/ozzo-validation"
+	errors "github.com/pjebs/jsonerror"
 )
 
 // AuthService is a contract that provides authentication and authorization services.
@@ -15,12 +16,18 @@ type AuthService struct {
 // Validate verifies that an AuthService's fields contain valid data.
 // Returns nil if the AuthService contains valid data, otherwise an error.
 func (authService AuthService) Validate() error {
-	return validation.ValidateStruct(&authService,
+	err := validation.ValidateStruct(&authService,
 		// Authenticated defaults to false.
 
 		// Roles cannot be nil.
 		validation.Field(&authService.Roles, validation.NotNil),
 	)
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }
 
 // NewAuthService creates a new instance of an AuthService.
@@ -34,7 +41,7 @@ func NewAuthService(authenticated bool, roles map[enumeration.AuthorizationRole]
 
 	err := authService.Validate()
 	if err != nil {
-		return nil, err
+		return nil, errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
 	}
 
 	// All okay

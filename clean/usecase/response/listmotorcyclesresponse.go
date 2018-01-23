@@ -3,8 +3,9 @@ package response
 
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/go-ozzo/ozzo-validation"
-	"github.com/pkg/errors"
+	errors "github.com/pjebs/jsonerror"
 )
 
 // ListMotorcyclesResponse is a simple dto containing the response data from the ListMotorcyclesInteractor.
@@ -20,34 +21,44 @@ func NewListMotorcyclesResponse(motorcycles []entity.Motorcycle, err error) (*Li
 	// We return a (nil, error) only when validation of the response message fails, not for whether the
 	// response message indicates failure.
 
-	listResponse := &ListMotorcyclesResponse{
+	motorcycleResponse := &ListMotorcyclesResponse{
 		Motorcycles: motorcycles,
 		Error:       err,
 	}
 
-	msgErr := listResponse.Validate()
+	msgErr := motorcycleResponse.Validate()
 
 	// If we have a response message with a failure and validation failed, we will wrap the original error with the validation error.
-	if listResponse.Error != nil && msgErr != nil {
-		return nil, errors.Wrap(msgErr, listResponse.Error.Error())
+	if motorcycleResponse.Error != nil && msgErr != nil {
+		ecol := errors.NewErrorCollection(errors.RejectDuplicates)
+		ecol.AddErrors(motorcycleResponse.Error, msgErr)
+
+		return nil, errors.New(motorcycleResponse.Error.(errors.JE).Code,
+			enumeration.StatusText(motorcycleResponse.Error.(errors.JE).Code), ecol.Error())
 	}
 
 	// If we have a response message that indicates success, but validation failed, we will return the validation error.
-	if listResponse.Error == nil && msgErr != nil {
+	if motorcycleResponse.Error == nil && msgErr != nil {
 		return nil, msgErr
 	}
 
 	// If we have a response message that failed, but validation was successful, we will return response.
-	if listResponse.Error != nil && msgErr == nil {
-		return listResponse, nil
+	if motorcycleResponse.Error != nil && msgErr == nil {
+		return motorcycleResponse, nil
 	}
 
 	// Otherwise, all okay
-	return listResponse, nil
+	return motorcycleResponse, nil
 }
 
 // Validate verifies that a ListMotorcyclesResponse's fields contain valid data.
 // Returns nil if the ListMotorcyclesResponse contains valid data, otherwise an error.
 func (response ListMotorcyclesResponse) Validate() error {
-	return validation.ValidateStruct(&response)
+	err := validation.ValidateStruct(&response)
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }

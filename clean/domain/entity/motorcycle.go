@@ -2,12 +2,15 @@
 package entity
 
 import (
-	"errors"
 	"strings"
 
-	"github.com/abitofhelp/motominderapi/clean/domain/constant"
-	"github.com/go-ozzo/ozzo-validation"
+	errors "github.com/pjebs/jsonerror"
+
 	"time"
+
+	"github.com/abitofhelp/motominderapi/clean/domain/constant"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
+	"github.com/go-ozzo/ozzo-validation"
 )
 
 // Motorcycle is an entity
@@ -29,7 +32,7 @@ func IsInvalidManufacturer(value interface{}) error {
 
 	// Test for invalid manufacturers
 	if strings.EqualFold(s, "Ford") {
-		return errors.New("cannot be Ford")
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), "cannot be Ford")
 	}
 	return nil
 }
@@ -40,7 +43,7 @@ func Is17Characters(value interface{}) error {
 	s, _ := value.(string)
 
 	if len(s) != constant.VinLength {
-		return errors.New("must contain 17 characters")
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), "must contain 17 characters")
 	}
 
 	return nil
@@ -49,7 +52,7 @@ func Is17Characters(value interface{}) error {
 // Validate verifies that a motorcycle's fields contain valid data that satisfies enterprise's common business rules.
 // Returns nil if the motorcycle contains valid data, otherwise an error.
 func (m Motorcycle) Validate() error {
-	return validation.ValidateStruct(&m,
+	err := validation.ValidateStruct(&m,
 		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)
 		validation.Field(&m.Make, validation.Required, validation.Length(constant.MinMakeLength, constant.MaxMakeLength), validation.By(IsInvalidManufacturer)),
 		// Model cannot be nil, cannot be empty, and max length of 20
@@ -59,6 +62,12 @@ func (m Motorcycle) Validate() error {
 		// Vin cannot be nil, cannot be empty, and has a length of 17
 		validation.Field(&m.Vin, validation.Required, validation.By(Is17Characters)),
 	)
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }
 
 // NewMotorcycle creates a new instance of a Motorcycle.
@@ -66,7 +75,7 @@ func (m Motorcycle) Validate() error {
 func NewMotorcycle(make string, model string, year int, vin string) (*Motorcycle, error) {
 
 	motorcycle := &Motorcycle{
-		ID:    0,
+		ID:    constant.InvalidEntityID,
 		Make:  make,
 		Model: model,
 		Year:  year,

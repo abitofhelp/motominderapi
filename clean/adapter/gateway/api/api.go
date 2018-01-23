@@ -5,6 +5,7 @@ import (
 	// Standard library packages
 	"encoding/json"
 	"fmt"
+	errors "github.com/pjebs/jsonerror"
 	"log"
 	"net/http"
 	"strconv"
@@ -34,11 +35,17 @@ type Api struct {
 // Validate verifies that a api's fields contain valid data.
 // Returns nil on success, otherwise error.
 func (api Api) Validate() error {
-	return validation.ValidateStruct(&api,
+	err := validation.ValidateStruct(&api,
 		validation.Field(&api.Roles, validation.Required),
 		validation.Field(&api.AuthService, validation.Required),
 		validation.Field(&api.MotorcycleRepository, validation.Required),
 		validation.Field(&api.Router, validation.Required))
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }
 
 // NewApi creates a new instance of an Api.
@@ -102,35 +109,35 @@ func (api *Api) ListMotorcyclesHandler(w http.ResponseWriter, r *http.Request, _
 	listRequest, err := request.NewListMotorcyclesRequest()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	listInteractor, err := interactor.NewListMotorcyclesInteractor(api.MotorcycleRepository, api.AuthService)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	listResponse, err := listInteractor.Handle(listRequest)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	listPresenter, err := presenter.NewListMotorcyclesPresenter()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	viewModel, err := listPresenter.Handle(listResponse)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -139,7 +146,7 @@ func (api *Api) ListMotorcyclesHandler(w http.ResponseWriter, r *http.Request, _
 	if err == nil {
 		// Write content-type, statuscode, payload
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "%s", uj)
 	}
 }
@@ -149,7 +156,7 @@ func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 	id, err := strconv.Atoi(p.ByName("id"))
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -157,35 +164,35 @@ func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 	deleteRequest, err := request.NewDeleteMotorcycleRequest(id)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	deleteInteractor, err := interactor.NewDeleteMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	deleteResponse, err := deleteInteractor.Handle(deleteRequest)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	deletePresenter, err := presenter.NewDeleteMotorcyclePresenter()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	deleteViewModel, err := deletePresenter.Handle(deleteResponse)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -194,7 +201,7 @@ func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 	if err == nil {
 		// Write content-type, statuscode, payload
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(204)
+		w.WriteHeader(http.StatusNoContent)
 		fmt.Fprintf(w, "%s", uj)
 	}
 }
@@ -212,35 +219,35 @@ func (api *Api) InsertMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 	motorcycleRequest, err := request.NewInsertMotorcycleRequest(motorcycleDto.Make, motorcycleDto.Model, motorcycleDto.Year, motorcycleDto.Vin)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	motorcycleInteractor, err := interactor.NewInsertMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	response, err := motorcycleInteractor.Handle(motorcycleRequest)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	motorcyclePresenter, err := presenter.NewInsertMotorcyclePresenter()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	viewModel, err := motorcyclePresenter.Handle(response)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

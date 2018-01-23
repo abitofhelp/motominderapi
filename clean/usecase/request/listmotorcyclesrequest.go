@@ -2,7 +2,9 @@
 package request
 
 import (
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/go-ozzo/ozzo-validation"
+	errors "github.com/pjebs/jsonerror"
 )
 
 // ListMotorcyclesRequest is a simple dto containing the required data for the ListMotorcyclesInteractor.
@@ -27,5 +29,11 @@ func NewListMotorcyclesRequest() (*ListMotorcyclesRequest, error) {
 // Validate verifies that a ListMotorcyclesRequest's fields contain valid data.
 // Returns (an instance of ListMotorcyclesRequest, nil) on success, otherwise (nil, error)
 func (request ListMotorcyclesRequest) Validate() error {
-	return validation.ValidateStruct(&request)
+	err := validation.ValidateStruct(&request)
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }

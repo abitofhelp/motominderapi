@@ -10,12 +10,12 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/domain/contract"
 	"github.com/go-ozzo/ozzo-validation"
 
-	"errors"
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
+	errors "github.com/pjebs/jsonerror"
 )
 
 /*
@@ -91,11 +91,17 @@ func NewInsertMotorcycleInteractor(motorcycleRepository contract.MotorcycleRepos
 // Validate verifies that a InsertMotorcycleInteractor's fields contain valid data.
 // Returns nil if the InsertMotorcycleInteractor contains valid data, otherwise an error.
 func (interactor InsertMotorcycleInteractor) Validate() error {
-	return validation.ValidateStruct(&interactor,
+	err := validation.ValidateStruct(&interactor,
 		// MotorcycleRepository is required and cannot be null.
 		validation.Field(&interactor.MotorcycleRepository, validation.Required),
 		// AuthService is required and cannot be null.
 		validation.Field(&interactor.AuthService, validation.Required))
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }
 
 // Handle processes the request message and generates the response message.  It is performing the use case.
@@ -104,18 +110,12 @@ func (interactor InsertMotorcycleInteractor) Validate() error {
 func (interactor *InsertMotorcycleInteractor) Handle(requestMessage *request.InsertMotorcycleRequest) (*response.InsertMotorcycleResponse, error) {
 	// Verify that the user has been properly authenticated.
 	if !interactor.AuthService.IsAuthenticated() {
-		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New("insert operation failed due to not being authenticated, so please contact your system administrator"))
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New(enumeration.StatusUnauthorized, enumeration.StatusText(enumeration.StatusUnauthorized), "insert operation failed due to not being authenticated, so please contact your system administrator"))
 	}
 
 	// Verify that the user has the necessary authorizations.
 	if !interactor.AuthService.IsAuthorized(enumeration.AdminAuthorizationRole) {
-		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New("insert operation failed due to not having the required user authorization roles, so please contact your system administrator"))
-	}
-
-	// Verify that a motorcycle with the same vin does not exist.
-	moto, err := interactor.MotorcycleRepository.FindByVin(requestMessage.Vin)
-	if moto != nil {
-		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New("insert operation failed due to a motorcycle with the same VIN already existing in the repository"))
+		return response.NewInsertMotorcycleResponse(constant.InvalidEntityID, errors.New(enumeration.StatusForbidden, enumeration.StatusText(enumeration.StatusForbidden), "insert operation failed due to not being authorized, so please contact your system administrator"))
 	}
 
 	// Create a new Motorcycle entity.

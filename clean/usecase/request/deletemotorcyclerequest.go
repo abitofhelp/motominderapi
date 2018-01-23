@@ -2,7 +2,9 @@
 package request
 
 import (
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/go-ozzo/ozzo-validation"
+	errors "github.com/pjebs/jsonerror"
 )
 
 // DeleteMotorcycleRequest is a simple dto containing the required data for the DeleteMotorcycleInteractor.
@@ -30,7 +32,13 @@ func NewDeleteMotorcycleRequest(id int) (*DeleteMotorcycleRequest, error) {
 // Validate verifies that a DeleteMotorcycleRequest's fields contain valid data.
 // Returns (an instance of DeleteMotorcycleRequest, nil) on success, otherwise (nil, error)
 func (request DeleteMotorcycleRequest) Validate() error {
-	return validation.ValidateStruct(&request,
+	err := validation.ValidateStruct(&request,
 		// ID is required and it must be greater than 0.
 		validation.Field(&request.ID, validation.Required, validation.Min(1)))
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }

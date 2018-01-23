@@ -2,8 +2,9 @@
 package response
 
 import (
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/go-ozzo/ozzo-validation"
-	"github.com/pkg/errors"
+	errors "github.com/pjebs/jsonerror"
 )
 
 // InsertMotorcycleResponse is a simple dto containing the response data from the InsertMotorcycleInteractor.
@@ -28,7 +29,11 @@ func NewInsertMotorcycleResponse(id int, err error) (*InsertMotorcycleResponse, 
 
 	// If we have a response message with a failure and validation failed, we will wrap the original error with the validation error.
 	if motorcycleResponse.Error != nil && msgErr != nil {
-		return nil, errors.Wrap(msgErr, motorcycleResponse.Error.Error())
+		ecol := errors.NewErrorCollection(errors.RejectDuplicates)
+		ecol.AddErrors(motorcycleResponse.Error, msgErr)
+
+		return nil, errors.New(motorcycleResponse.Error.(errors.JE).Code,
+			enumeration.StatusText(motorcycleResponse.Error.(errors.JE).Code), ecol.Error())
 	}
 
 	// If we have a response message that indicates success, but validation failed, we will return the validation error.
@@ -48,7 +53,13 @@ func NewInsertMotorcycleResponse(id int, err error) (*InsertMotorcycleResponse, 
 // Validate verifies that a InsertMotorcycleResponse's fields contain valid data.
 // Returns nil if the InsertMotorcycleResponse contains valid data, otherwise an error.
 func (response InsertMotorcycleResponse) Validate() error {
-	return validation.ValidateStruct(&response,
+	err := validation.ValidateStruct(&response,
 		// ID is required and it must be non-zero
 		validation.Field(&response.ID, validation.Required))
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }

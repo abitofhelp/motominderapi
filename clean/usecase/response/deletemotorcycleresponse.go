@@ -2,8 +2,9 @@
 package response
 
 import (
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration"
 	"github.com/go-ozzo/ozzo-validation"
-	"github.com/pkg/errors"
+	errors "github.com/pjebs/jsonerror"
 )
 
 // DeleteMotorcycleResponse is a simple dto containing the response data from the DeleteMotorcycleInteractor.
@@ -29,7 +30,11 @@ func NewDeleteMotorcycleResponse(id int, err error) (*DeleteMotorcycleResponse, 
 
 	// If we have a response message with a failure and validation failed, we will wrap the original error with the validation error.
 	if motorcycleResponse.Error != nil && msgErr != nil {
-		return nil, errors.Wrap(msgErr, motorcycleResponse.Error.Error())
+		ecol := errors.NewErrorCollection(errors.RejectDuplicates)
+		ecol.AddErrors(motorcycleResponse.Error, msgErr)
+
+		return nil, errors.New(motorcycleResponse.Error.(errors.JE).Code,
+			enumeration.StatusText(motorcycleResponse.Error.(errors.JE).Code), ecol.Error())
 	}
 
 	// If we have a response message that indicates success, but validation failed, we will return the validation error.
@@ -49,7 +54,13 @@ func NewDeleteMotorcycleResponse(id int, err error) (*DeleteMotorcycleResponse, 
 // Validate verifies that a DeleteMotorcycleResponse's fields contain valid data.
 // Returns nil if the DeleteMotorcycleResponse contains valid data, otherwise an error.
 func (response DeleteMotorcycleResponse) Validate() error {
-	return validation.ValidateStruct(&response,
+	err := validation.ValidateStruct(&response,
 		// ID is required and it must be non-zero
 		validation.Field(&response.ID, validation.Required, validation.Min(1)))
+
+	if err != nil {
+		return errors.New(enumeration.StatusInternalServerError, enumeration.StatusText(enumeration.StatusInternalServerError), err.Error())
+	}
+
+	return nil
 }
