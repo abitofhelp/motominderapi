@@ -15,4 +15,5 @@ type MotorcycleRepository interface {
 	FindByID(id int) (*entity.Motorcycle, error)
 	Save() error
 	Validate() error
+	Exists(motorcycle *entity.Motorcycle) (*entity.Motorcycle, error)
 }

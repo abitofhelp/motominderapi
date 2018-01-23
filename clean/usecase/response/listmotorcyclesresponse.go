@@ -3,9 +3,8 @@ package response
 
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/go-ozzo/ozzo-validation"
-	errors "github.com/pjebs/jsonerror"
+	"github.com/pkg/errors"
 )
 
 // ListMotorcyclesResponse is a simple dto containing the response data from the ListMotorcyclesInteractor.
@@ -30,11 +29,7 @@ func NewListMotorcyclesResponse(motorcycles []entity.Motorcycle, err error) (*Li
 
 	// If we have a response message with a failure and validation failed, we will wrap the original error with the validation error.
 	if motorcycleResponse.Error != nil && msgErr != nil {
-		ecol := errors.NewErrorCollection(errors.RejectDuplicates)
-		ecol.AddErrors(motorcycleResponse.Error, msgErr)
-
-		return nil, errors.New(motorcycleResponse.Error.(errors.JE).Code,
-			operationstatus.StatusText(motorcycleResponse.Error.(errors.JE).Code), ecol.Error())
+		return nil, errors.Wrap(motorcycleResponse.Error, msgErr.Error())
 	}
 
 	// If we have a response message that indicates success, but validation failed, we will return the validation error.
@@ -54,11 +49,5 @@ func NewListMotorcyclesResponse(motorcycles []entity.Motorcycle, err error) (*Li
 // Validate verifies that a ListMotorcyclesResponse's fields contain valid data.
 // Returns nil if the ListMotorcyclesResponse contains valid data, otherwise an error.
 func (response ListMotorcyclesResponse) Validate() error {
-	err := validation.ValidateStruct(&response)
-
-	if err != nil {
-		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
-	}
-
-	return nil
+	return validation.ValidateStruct(&response)
 }

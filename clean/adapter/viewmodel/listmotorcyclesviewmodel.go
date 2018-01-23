@@ -4,10 +4,9 @@ package viewmodel
 import (
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/api/dto"
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	"github.com/go-ozzo/ozzo-validation"
-	errors "github.com/pjebs/jsonerror"
+	"github.com/pkg/errors"
 )
 
 // ListMotorcyclesViewModel translates a ListMotorcyclesResponse to a ListMotorcyclesViewModel.
@@ -48,11 +47,7 @@ func NewListMotorcyclesViewModel(motorcycles []entity.Motorcycle, message string
 	msgErr := viewModel.Validate()
 	// If we have a response message with a failure and validation failed, we will wrap the original error with the validation error.
 	if viewModel.Error != nil && msgErr != nil {
-		ecol := errors.NewErrorCollection(errors.RejectDuplicates)
-		ecol.AddErrors(viewModel.Error, msgErr)
-
-		return nil, errors.New(viewModel.Error.(errors.JE).Code,
-			operationstatus.StatusText(viewModel.Error.(errors.JE).Code), ecol.Error())
+		return nil, errors.Wrap(viewModel.Error, msgErr.Error())
 	}
 
 	// If we have a response message that indicates success, but validation failed, we will return the validation error.
@@ -82,17 +77,11 @@ func (viewmodel *ListMotorcyclesViewModel) Handle(responseMessage *response.List
 // Validate verifies that a ListMotorcyclesViewModel's fields contain valid data.
 // Returns (an instance of ListMotorcyclesViewModel, nil) on success, otherwise (nil, error).
 func (viewmodel ListMotorcyclesViewModel) Validate() error {
-	err := validation.ValidateStruct(&viewmodel,
+	return validation.ValidateStruct(&viewmodel,
 		// Motorcycles can be empty, but not nil
 		validation.Field(&viewmodel.Motorcycles, validation.NotNil),
 
 		// Message is required and it cannot be empty or nil.
 		validation.Field(&viewmodel.Message, validation.NilOrNotEmpty),
 	)
-
-	if err != nil {
-		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
-	}
-
-	return nil
 }

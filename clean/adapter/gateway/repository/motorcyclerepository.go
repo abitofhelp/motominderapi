@@ -3,15 +3,14 @@ package repository
 
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 
 	"fmt"
+	"github.com/pkg/errors"
 	"sort"
 	"time"
 
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
 	"github.com/go-ozzo/ozzo-validation"
-	errors "github.com/pjebs/jsonerror"
 )
 
 // MotorcycleRepository provides CRUD operations against a collection of motorcycles.
@@ -46,47 +45,75 @@ func NewMotorcycleRepository() (*MotorcycleRepository, error) {
 // Validate test that a motorcycle repository is valid.
 // Returns nil on success, otherwise an error.
 func (repo MotorcycleRepository) Validate() error {
-	err := validation.ValidateStruct(&repo,
+	return validation.ValidateStruct(&repo,
 		// Motorcycles can be empty, but not nil
 		validation.Field(&repo.Motorcycles, validation.NotNil))
-
-	if err != nil {
-		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
-	}
-
-	return nil
 }
 
 // List gets the unordered list of motorcycles in the repository.
 // Returns the (list of motorcycles, nil) or an (nil, error).
 func (repo *MotorcycleRepository) List() ([]entity.Motorcycle, error) {
 	if repo.Motorcycles == nil {
-		return nil, errors.New(operationstatus.StatusInternalServerError, "list of motorcycles is nil", "create an instance of []entity.Motorcycle")
+		return nil, errors.New("list of motorcycles is nil, so create an instance of []entity.Motorcycle")
 	}
 	return repo.Motorcycles, nil
 }
 
+// Exists determines whether a motorcycle with the VIN exists in the repository.
+// Returns (true, nil) for found, (false, nil) for not found, otherwise (false, error).
+func (repo *MotorcycleRepository) ExistsByVin(vin string) (bool, error) {
+	// Determine whether a motorcycle with the VIN already exists in the repository.
+	moto, err := repo.FindByVin(vin)
+	if err != nil {
+		return false, err
+	}
+
+	// Found
+	if moto != nil {
+		return true, nil
+	}
+
+	// Not Found
+	return false, nil
+}
+
+// Exists determines whether a motorcycle with the ID exists in the repository.
+// Returns (true, nil) for found, (false, nil) for not found, otherwise (false, error).
+func (repo *MotorcycleRepository) ExistsByID(id int) (bool, error) {
+	// Determine whether a motorcycle with the VIN already exists in the repository.
+	moto, err := repo.FindByID(id)
+	if err != nil {
+		return false, err
+	}
+
+	// Found
+	if moto != nil {
+		return true, nil
+	}
+
+	// Not Found
+	return false, nil
+}
+
 // Insert adds a motorcycle to the repository.
-// Do not permit duplicate ID or VIN values.
+// Does not permit duplicate VIN values.
 // Returns the (new motorcycle, nil) on success, otherwise (nil, error).
 func (repo *MotorcycleRepository) Insert(motorcycle *entity.Motorcycle) (*entity.Motorcycle, error) {
-	// Determine whether the motorcycle already exists in the repository.
-	i, _ := repo.findByID(motorcycle.ID)
-	if i != constant.InvalidEntityID {
-		return nil, errors.New(operationstatus.StatusFound, operationstatus.StatusText(operationstatus.StatusFound), fmt.Sprintf("cannot insert the motorcycle with ID %d because it already exists", motorcycle.ID))
+	exists, err := repo.ExistsByVin(motorcycle.Vin)
+	if err != nil {
+		return nil, err
 	}
 
-	i, _ = repo.findByVin(motorcycle.Vin)
-	if i != constant.InvalidEntityID {
-		return nil, errors.New(operationstatus.StatusFound, operationstatus.StatusText(operationstatus.StatusFound), fmt.Sprintf("cannot insert the motorcycle with VIN %s because it already exists", motorcycle.ID))
+	if exists {
+		return nil, errors.New(fmt.Sprintf("cannot insert the motorcycle with VIN %s because the VIN already exists in the repository", motorcycle.Vin))
 	}
 
-	// Save the time when this entity was created in the repository.
+	// Assign the ID to the new motorcycle, and save the time when this entity was created in the repository.
 	motorcycle.ID = repo.getNextID()
 	motorcycle.CreatedUtc = time.Now().UTC()
 
 	// Validate the object
-	err := motorcycle.Validate()
+	err = motorcycle.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -96,35 +123,48 @@ func (repo *MotorcycleRepository) Insert(motorcycle *entity.Motorcycle) (*entity
 	return motorcycle, nil
 }
 
-// Update replaces a motorcycle an existing motorcycle in the repository.
+// Update replaces an existing motorcycle in the repository.
 // If the motorcycle does not exist, an error is returned.
+// Does not permit duplicate VIN values.
 // Returns (updated motorcycle, nil) on success, otherwise an (nil, error).
 func (repo *MotorcycleRepository) Update(motorcycle *entity.Motorcycle) (*entity.Motorcycle, error) {
-	// Find the motorcycle, so it can be updated in the repository.
-	i, _ := repo.findByID(motorcycle.ID)
-	if i == constant.InvalidEntityID {
-		return nil, errors.New(operationstatus.StatusFound, operationstatus.StatusText(operationstatus.StatusFound), fmt.Sprintf("cannot update the motorcycle with ID %d because it does not exist", motorcycle.ID))
+
+	moto, err := repo.FindByID(motorcycle.ID)
+	if err != nil {
+		return nil, err
+	}
+	if moto == nil {
+		return nil, errors.New(fmt.Sprintf("cannot update the motorcycle with ID %d because the ID cannot be found in the repository", motorcycle.ID))
+	}
+
+	err = repo.Delete(motorcycle.ID)
+	if err != nil {
+		// Restore the motorcycle and indicate the error.
+		repo.Insert(moto)
+		return nil, err
 	}
 
 	// Save the time when this entity was updated in the repository.
 	motorcycle.ModifiedUtc = time.Now().UTC()
 
 	// Validate the object
-	err := motorcycle.Validate()
+	err = motorcycle.Validate()
 	if err != nil {
+		// Restore the motorcycle and indicate the error.
+		repo.Insert(moto)
 		return nil, err
 	}
 
-	repo.Motorcycles[i] = *motorcycle
+	repo.Motorcycles = append(repo.Motorcycles, *motorcycle)
 
 	return motorcycle, nil
 }
 
 // findByID a motorcycle in the repository using its primary key, ID.
-// Returns its (index, nil) on success, otherwise (index of -1, error).
+// Returns its (index, nil) on found, (index of -1, nil) for not found, otherwise (index of -1, error).
 func (repo *MotorcycleRepository) findByID(id int) (int, error) {
 	if repo.Motorcycles == nil {
-		return constant.InvalidEntityID, errors.New(operationstatus.StatusInternalServerError, "list of motorcycles is nil", "create an instance of []entity.Motorcycle")
+		return constant.InvalidEntityID, errors.New("list of motorcycles is nil")
 	}
 
 	// Sort the list of motorcycles by id and find the index to the motorcycle.
@@ -142,8 +182,8 @@ func (repo *MotorcycleRepository) findByID(id int) (int, error) {
 	return constant.InvalidEntityID, nil
 }
 
-//FindByID a motorcycle in the repository using its primary key, ID.
-// Returns (motorcycle, nil) on success, otherwise (nil, error).
+// FindByID a motorcycle in the repository using its primary key, ID.
+// Returns (motorcycle, nil) on found, (nil, nil) for not found,, otherwise (nil, error).
 func (repo *MotorcycleRepository) FindByID(id int) (*entity.Motorcycle, error) {
 
 	// Try to find the index for the motorcycle in the repository.
@@ -162,10 +202,10 @@ func (repo *MotorcycleRepository) FindByID(id int) (*entity.Motorcycle, error) {
 }
 
 // findByVin a motorcycle in the repository using its VIN.
-// Returns its (index, nil) on success, otherwise (index of -1, error).
+// Returns its (index, nil) on found, (index of -1, nil) for not found, otherwise (index of -1, error).
 func (repo *MotorcycleRepository) findByVin(vin string) (int, error) {
 	if repo.Motorcycles == nil {
-		return constant.InvalidEntityID, errors.New(operationstatus.StatusInternalServerError, "list of motorcycles is nil", "create an instance of []entity.Motorcycle")
+		return constant.InvalidEntityID, errors.New("list of motorcycles is nil, so create an instance of []entity.Motorcycle")
 	}
 
 	// Sort the list of motorcycles by id and find the index to the motorcycle.
@@ -184,7 +224,7 @@ func (repo *MotorcycleRepository) findByVin(vin string) (int, error) {
 }
 
 // FindByVin a motorcycle in the repository using its VIN.
-// Returns (motorcycle, nil) on success, otherwise (nil, error).
+// Returns (motorcycle, nil) on found, (nil, nil) for not found,, otherwise (nil, error).
 func (repo *MotorcycleRepository) FindByVin(vin string) (*entity.Motorcycle, error) {
 	// Try to find the index for the motorcycle in the repository.
 	i, err := repo.findByVin(vin)
@@ -209,8 +249,7 @@ func (repo *MotorcycleRepository) Delete(id int) error {
 	// Find the motorcycle, so it can be updated in the repository.
 	i, _ := repo.findByID(id)
 	if i == constant.InvalidEntityID {
-		return errors.New(operationstatus.StatusNotFound, operationstatus.StatusText(operationstatus.StatusNotFound), fmt.Sprintf("cannot delete the motorcycle with ID %d because it was not found", id))
-
+		return errors.New(fmt.Sprintf("cannot delete the motorcycle with ID %d because it was not found", id))
 	}
 
 	repo.Motorcycles = repo.removeAtIndex(i)

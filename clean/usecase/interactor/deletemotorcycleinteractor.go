@@ -11,10 +11,9 @@ import (
 	"github.com/go-ozzo/ozzo-validation"
 
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
-	errors "github.com/pjebs/jsonerror"
+	"github.com/pkg/errors"
 )
 
 /*
@@ -89,17 +88,11 @@ func NewDeleteMotorcycleInteractor(motorcycleRepository contract.MotorcycleRepos
 // Validate verifies that a DeleteMotorcycleInteractor's fields contain valid data.
 // Returns nil if the DeleteMotorcycleInteractor contains valid data, otherwise an error.
 func (interactor DeleteMotorcycleInteractor) Validate() error {
-	err := validation.ValidateStruct(&interactor,
+	return validation.ValidateStruct(&interactor,
 		// MotorcycleRepository is required and cannot be null.
 		validation.Field(&interactor.MotorcycleRepository, validation.Required),
 		// AuthService is required and cannot be null.
 		validation.Field(&interactor.AuthService, validation.Required))
-
-	if err != nil {
-		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
-	}
-
-	return nil
 }
 
 // Handle processes the request message and generates the response message.  It is performing the use case.
@@ -108,16 +101,22 @@ func (interactor DeleteMotorcycleInteractor) Validate() error {
 func (interactor *DeleteMotorcycleInteractor) Handle(requestMessage *request.DeleteMotorcycleRequest) (*response.DeleteMotorcycleResponse, error) {
 	// Verify that the user has been properly authenticated.
 	if !interactor.AuthService.IsAuthenticated() {
-		return response.NewDeleteMotorcycleResponse(requestMessage.ID, errors.New(operationstatus.StatusUnauthorized, operationstatus.StatusText(operationstatus.StatusUnauthorized), "delete operation failed due to not being authenticated, so please contact your system administrator"))
+		return response.NewDeleteMotorcycleResponse(requestMessage.ID, errors.New("delete operation failed due to not being authenticated"))
 	}
 
 	// Verify that the user has the necessary authorizations.
 	if !interactor.AuthService.IsAuthorized(authorizationrole.AdminAuthorizationRole) {
-		return response.NewDeleteMotorcycleResponse(requestMessage.ID, errors.New(operationstatus.StatusForbidden, operationstatus.StatusText(operationstatus.StatusForbidden), "insert operation failed due to not being authorized, so please contact your system administrator"))
+		return response.NewDeleteMotorcycleResponse(requestMessage.ID, errors.New("delete operation failed due to not being authorized, so please contact your system administrator"))
+	}
+
+	// If the motorcycle does not exist, we have an error.
+	_, err := interactor.MotorcycleRepository.FindByID(requestMessage.ID)
+	if err != nil {
+		return response.NewDeleteMotorcycleResponse(requestMessage.ID, err)
 	}
 
 	// Delete the motorcycle with ID from the repository.
-	err := interactor.MotorcycleRepository.Delete(requestMessage.ID)
+	err = interactor.MotorcycleRepository.Delete(requestMessage.ID)
 	if err != nil {
 		return response.NewDeleteMotorcycleResponse(requestMessage.ID, err)
 	}

@@ -3,9 +3,7 @@ package security
 
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/go-ozzo/ozzo-validation"
-	errors "github.com/pjebs/jsonerror"
 )
 
 // AuthService is a contract that provides authentication and authorization services.
@@ -25,7 +23,7 @@ func (authService AuthService) Validate() error {
 	)
 
 	if err != nil {
-		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
+		return err
 	}
 
 	return nil
@@ -42,7 +40,7 @@ func NewAuthService(authenticated bool, roles map[authorizationrole.Authorizatio
 
 	err := authService.Validate()
 	if err != nil {
-		return nil, errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
+		return nil, err
 	}
 
 	// All okay

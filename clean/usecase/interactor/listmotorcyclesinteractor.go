@@ -10,10 +10,9 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/domain/contract"
 	"github.com/go-ozzo/ozzo-validation"
 
-	errors "github.com/pjebs/jsonerror"
+	"github.com/pkg/errors"
 
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 )
@@ -82,17 +81,11 @@ func NewListMotorcyclesInteractor(motorcycleRepository contract.MotorcycleReposi
 // Validate verifies that a ListMotorcyclesInteractor's fields contain valid data.
 // Returns nil if the ListMotorcyclesInteractor contains valid data, otherwise an error.
 func (interactor ListMotorcyclesInteractor) Validate() error {
-	err := validation.ValidateStruct(&interactor,
+	return validation.ValidateStruct(&interactor,
 		// MotorcycleRepository is required and cannot be null.
 		validation.Field(&interactor.MotorcycleRepository, validation.Required),
 		// AuthService is required and cannot be null.
 		validation.Field(&interactor.AuthService, validation.Required))
-
-	if err != nil {
-		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
-	}
-
-	return nil
 }
 
 // Handle processes the request message and generates the response message.  It is performing the use case.
@@ -101,12 +94,12 @@ func (interactor ListMotorcyclesInteractor) Validate() error {
 func (interactor *ListMotorcyclesInteractor) Handle(requestMessage *request.ListMotorcyclesRequest) (*response.ListMotorcyclesResponse, error) {
 	// Verify that the user has been properly authenticated.
 	if !interactor.AuthService.IsAuthenticated() {
-		return response.NewListMotorcyclesResponse(nil, errors.New(operationstatus.StatusUnauthorized, operationstatus.StatusText(operationstatus.StatusUnauthorized), "insert operation failed due to not being authenticated, so please contact your system administrator"))
+		return response.NewListMotorcyclesResponse(nil, errors.New("list operation failed due to not being authenticated"))
 	}
 
 	// Verify that the user has the necessary authorizations.
 	if !interactor.AuthService.IsAuthorized(authorizationrole.AdminAuthorizationRole) {
-		return response.NewListMotorcyclesResponse(nil, errors.New(operationstatus.StatusForbidden, operationstatus.StatusText(operationstatus.StatusForbidden), "insert operation failed due to not being authorized, so please contact your system administrator"))
+		return response.NewListMotorcyclesResponse(nil, errors.New("list operation failed due to not being authorized, so please contact your system administrator"))
 	}
 
 	// Get the list of motorcycles from the repository.

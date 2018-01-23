@@ -3,10 +3,8 @@ package presenter
 
 import (
 	"github.com/abitofhelp/motominderapi/clean/adapter/viewmodel"
-	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	"github.com/go-ozzo/ozzo-validation"
-	errors "github.com/pjebs/jsonerror"
 )
 
 // DeleteMotorcyclePresenter translates the response message from the DeleteMotorcycleInteractor to a view model.
@@ -36,11 +34,5 @@ func (presenter *DeleteMotorcyclePresenter) Handle(responseMessage *response.Del
 // Validate verifies that a DeleteMotorcyclePresenter's fields contain valid data.
 // Returns (an instance of DeleteMotorcyclePresenter, nil) on success, otherwise (nil, error)
 func (presenter DeleteMotorcyclePresenter) Validate() error {
-	err := validation.ValidateStruct(&presenter)
-
-	if err != nil {
-		return errors.New(operationstatus.StatusInternalServerError, operationstatus.StatusText(operationstatus.StatusInternalServerError), err.Error())
-	}
-
-	return nil
+	return validation.ValidateStruct(&presenter)
 }
