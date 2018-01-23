@@ -2,17 +2,18 @@
 package request
 
 import (
+	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
 	"github.com/go-ozzo/ozzo-validation"
 )
 
 // DeleteMotorcycleRequest is a simple dto containing the required data for the DeleteMotorcycleInteractor.
 type DeleteMotorcycleRequest struct {
-	ID int `json:"id"`
+	ID typedef.ID `json:"id"`
 }
 
 // NewDeleteMotorcycleRequest creates a new instance of a DeleteMotorcycleRequest.
 // Returns (nil, error) when there is an error, otherwise (DeleteMotorcycleRequest, nil).
-func NewDeleteMotorcycleRequest(id int) (*DeleteMotorcycleRequest, error) {
+func NewDeleteMotorcycleRequest(id typedef.ID) (*DeleteMotorcycleRequest, error) {
 
 	motorcycleRequest := &DeleteMotorcycleRequest{
 		ID: id,

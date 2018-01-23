@@ -9,19 +9,41 @@ import (
 	"time"
 
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
+	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
 	"github.com/go-ozzo/ozzo-validation"
 )
 
 // Motorcycle is an entity
 type Motorcycle struct {
-	ID          int       `json:"id"`
-	Make        string    `json:"make"`
-	Model       string    `json:"model"`
-	Year        int       `json:"year"`
-	Vin         string    `json:"vin"`
-	CreatedUtc  time.Time `json:"createdUtc"`
-	ModifiedUtc time.Time `json:"modifiedUtc"`
+	ID          typedef.ID `json:"id"`
+	Make        string     `json:"make"`
+	Model       string     `json:"model"`
+	Year        int        `json:"year"`
+	Vin         string     `json:"vin"`
+	CreatedUtc  time.Time  `json:"createdUtc"`
+	ModifiedUtc time.Time  `json:"modifiedUtc"`
 	//rowVersion  []byte    `json:"rowVersion"`
+}
+
+// Validate implemented Entity.Validate().  It verifies that a motorcycle's fields contain valid data that satisfies enterprise's common business rules.
+// Returns nil if the motorcycle contains valid data, otherwise an error.
+func (m Motorcycle) Validate() error {
+	err := validation.ValidateStruct(&m,
+		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)
+		validation.Field(&m.Make, validation.Required, validation.Length(constant.MinMakeLength, constant.MaxMakeLength), validation.By(IsInvalidManufacturer)),
+		// Model cannot be nil, cannot be empty, and max length of 20
+		validation.Field(&m.Model, validation.Required, validation.Length(constant.MinModelLength, constant.MaxModelLength)),
+		// Year must be between 1999 and 2020, inclusive.
+		validation.Field(&m.Year, validation.Required, validation.Min(constant.MinYear), validation.Max(constant.MaxYear)),
+		// Vin cannot be nil, cannot be empty, and has a length of 17
+		validation.Field(&m.Vin, validation.Required, validation.By(Is17Characters)),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // IsInvalidManufacturer verifies that a motorcycle's make is not an invalid manufacturer.
@@ -43,27 +65,6 @@ func Is17Characters(value interface{}) error {
 
 	if len(s) != constant.VinLength {
 		return errors.New("must contain 17 characters")
-	}
-
-	return nil
-}
-
-// Validate verifies that a motorcycle's fields contain valid data that satisfies enterprise's common business rules.
-// Returns nil if the motorcycle contains valid data, otherwise an error.
-func (m Motorcycle) Validate() error {
-	err := validation.ValidateStruct(&m,
-		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)
-		validation.Field(&m.Make, validation.Required, validation.Length(constant.MinMakeLength, constant.MaxMakeLength), validation.By(IsInvalidManufacturer)),
-		// Model cannot be nil, cannot be empty, and max length of 20
-		validation.Field(&m.Model, validation.Required, validation.Length(constant.MinModelLength, constant.MaxModelLength)),
-		// Year must be between 1999 and 2020, inclusive.
-		validation.Field(&m.Year, validation.Required, validation.Min(constant.MinYear), validation.Max(constant.MaxYear)),
-		// Vin cannot be nil, cannot be empty, and has a length of 17
-		validation.Field(&m.Vin, validation.Required, validation.By(Is17Characters)),
-	)
-
-	if err != nil {
-		return err
 	}
 
 	return nil

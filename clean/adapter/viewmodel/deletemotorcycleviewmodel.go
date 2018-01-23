@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
+	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	"github.com/go-ozzo/ozzo-validation"
 )
@@ -12,14 +13,14 @@ import (
 // DeleteMotorcycleViewModel translates a DeleteMotorcycleResponse to a DeleteMotorcycleViewModel.
 // by the Configuration ring.
 type DeleteMotorcycleViewModel struct {
-	ID      int    `json:"id"`
-	Message string `json:"message"`
-	Error   error  `json:"error"`
+	ID      typedef.ID `json:"id"`
+	Message string     `json:"message"`
+	Error   error      `json:"error"`
 }
 
 // NewDeleteMotorcycleViewModel creates a new instance of a DeleteMotorcycleViewModel.
 // Returns an (instance of DeleteMotorcycleViewModel, nil) on success, otherwise (nil, error)
-func NewDeleteMotorcycleViewModel(id int, message string, err error) (*DeleteMotorcycleViewModel, error) {
+func NewDeleteMotorcycleViewModel(id typedef.ID, message string, err error) (*DeleteMotorcycleViewModel, error) {
 
 	viewModel := &DeleteMotorcycleViewModel{
 		ID:      id,

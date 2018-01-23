@@ -2,6 +2,7 @@
 package response
 
 import (
+	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
 	"github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 )
@@ -9,13 +10,13 @@ import (
 // DeleteMotorcycleResponse is a simple dto containing the response data from the DeleteMotorcycleInteractor.
 type DeleteMotorcycleResponse struct {
 	// ID will be set to the value that was requested to be deleted.
-	ID    int   `json:"id"`
-	Error error `json:"error"`
+	ID    typedef.ID `json:"id"`
+	Error error      `json:"error"`
 }
 
 // NewDeleteMotorcycleResponse creates a new instance of a DeleteMotorcycleResponse.
 // Returns (nil, error) when there is an error, otherwise (DeleteMotorcycleResponse, nil).
-func NewDeleteMotorcycleResponse(id int, err error) (*DeleteMotorcycleResponse, error) {
+func NewDeleteMotorcycleResponse(id typedef.ID, err error) (*DeleteMotorcycleResponse, error) {
 
 	// We return a (nil, error) only when validation of the response message fails, not for whether the
 	// response message indicates failure.

@@ -1,4 +1,4 @@
-// Package enumeration defines enumerations for the application.
+// Package authorizationrole defines enumerations for the application.
 package authorizationrole
 
 // AuthorizationRole is an authorization given to an authenticated user to access a resource.

@@ -2,19 +2,20 @@
 package response
 
 import (
+	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
 	"github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 )
 
 // InsertMotorcycleResponse is a simple dto containing the response data from the InsertMotorcycleInteractor.
 type InsertMotorcycleResponse struct {
-	ID    int   `json:"id"`
-	Error error `json:"error"`
+	ID    typedef.ID `json:"id"`
+	Error error      `json:"error"`
 }
 
 // NewInsertMotorcycleResponse creates a new instance of a InsertMotorcycleResponse.
 // Returns (nil, error) when there is an error, otherwise (InsertMotorcycleResponse, nil).
-func NewInsertMotorcycleResponse(id int, err error) (*InsertMotorcycleResponse, error) {
+func NewInsertMotorcycleResponse(id typedef.ID, err error) (*InsertMotorcycleResponse, error) {
 
 	// We return a (nil, error) only when validation of the response message fails, not for whether the
 	// response message indicates failure.

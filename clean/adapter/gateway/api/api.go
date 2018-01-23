@@ -19,6 +19,7 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/security"
 	"github.com/abitofhelp/motominderapi/clean/adapter/presenter"
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
+	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
 	"github.com/abitofhelp/motominderapi/clean/usecase/interactor"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/go-ozzo/ozzo-validation"
@@ -171,7 +172,7 @@ func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 	}
 
 	// Create the motorcycleRequest, process it, and get the resulting view model or error.
-	deleteRequest, err := request.NewDeleteMotorcycleRequest(id)
+	deleteRequest, err := request.NewDeleteMotorcycleRequest(typedef.ID(id))
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)

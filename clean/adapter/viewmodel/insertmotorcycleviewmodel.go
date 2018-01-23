@@ -3,6 +3,7 @@ package viewmodel
 
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
+	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	"github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
@@ -11,14 +12,14 @@ import (
 // InsertMotorcycleViewModel translates a InsertMotorcycleResponse to a InsertMotorcycleViewModel.
 // by the Configuration ring.
 type InsertMotorcycleViewModel struct {
-	ID      int    `json:"id"`
-	Message string `json:"message"`
-	Error   error  `json:"error"`
+	ID      typedef.ID `json:"id"`
+	Message string     `json:"message"`
+	Error   error      `json:"error"`
 }
 
 // NewInsertMotorcycleViewModel creates a new instance of a InsertMotorcycleViewModel.
 // Returns an (instance of InsertMotorcycleViewModel, nil) on success, otherwise (nil, error)
-func NewInsertMotorcycleViewModel(id int, message string, err error) (*InsertMotorcycleViewModel, error) {
+func NewInsertMotorcycleViewModel(id typedef.ID, message string, err error) (*InsertMotorcycleViewModel, error) {
 
 	viewModel := &InsertMotorcycleViewModel{
 		ID:      id,

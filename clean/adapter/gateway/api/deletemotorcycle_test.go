@@ -13,6 +13,7 @@ import (
 	"github.com/abitofhelp/motominderapi/clean/adapter/viewmodel"
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
+	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 )
@@ -55,13 +56,16 @@ func TestApi_DeleteMotorcycle(t *testing.T) {
 
 // DeleteMotorcycle deletes a motorcycle from the repository using the RESTful API.
 // Returns (*response, nil) on success, otherwise (nil, error).
-func DeleteMotorcycle(ourApi *Api, id int) (*http.Response, error) {
+func DeleteMotorcycle(ourApi *Api, id typedef.ID) (*http.Response, error) {
+
+	idText := strconv.Itoa(int(id))
+
 	// An http handler wrapper around httprouter's handler.  It permits us to use
 	// the test server.
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ourApi.DeleteMotorcycleHandler(w, r, httprouter.Params{httprouter.Param{
 			Key:   "id",
-			Value: strconv.Itoa(id),
+			Value: idText,
 		}})
 	})
 
@@ -69,8 +73,8 @@ func DeleteMotorcycle(ourApi *Api, id int) (*http.Response, error) {
 	defer server.Close()
 
 	client := &http.Client{}
-
-	req, err := http.NewRequest("DELETE", server.URL+"/"+strconv.Itoa(id), nil)
+	url := server.URL + "/" + idText
+	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		return nil, err
 	}
