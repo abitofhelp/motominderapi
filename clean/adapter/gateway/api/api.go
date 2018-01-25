@@ -221,7 +221,7 @@ func (api *Api) GetMotorcycleHandler(w http.ResponseWriter, r *http.Request, p h
 	fmt.Fprintf(w, "%s", uj)
 }
 
-// `MotorcycleHandler removes a motorcycle from the repository.
+// DeleteMotorcycleHandler removes a motorcycle from the repository.
 func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id, err := strconv.Atoi(p.ByName("id"))
@@ -279,16 +279,15 @@ func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// InsertMotorcycleHandler adds a new motorcycle to the repository.
+// UpdateMotorcycleHandler updates an existing motorcycle in the repository.
 func (api *Api) UpdateMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	id := p.ByName("id")
-	println(id)
-	//id, err := strconv.Atoi(p.ByName("id"))
-	//if err != nil {
-	//		w.WriteHeader(http.StatusBadRequest)
-	//		log.WithError(err)
-	//		return
-	//	}
+
+	id, err := strconv.Atoi(p.ByName("id"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithError(err)
+		return
+	}
 
 	// Stub a motorcycle to be populated from the body of the motorcycleRequest.
 	motorcycle := &entity.Motorcycle{}
@@ -297,7 +296,7 @@ func (api *Api) UpdateMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 	json.NewDecoder(r.Body).Decode(&motorcycle)
 
 	// Create the motorcycleRequest, process it, and get the resulting view model or error.
-	motorcycleRequest, err := request.NewUpdateMotorcycleRequest(123, motorcycle) //typedef.ID(id), motorcycle)
+	motorcycleRequest, err := request.NewUpdateMotorcycleRequest(typedef.ID(id), motorcycle) //typedef.ID(id), motorcycle)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.WithError(err)
