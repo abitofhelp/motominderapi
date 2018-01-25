@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/authorizationrole"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/abitofhelp/motominderapi/clean/usecase/request"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 )
@@ -94,20 +95,20 @@ func (interactor ListMotorcyclesInteractor) Validate() error {
 func (interactor *ListMotorcyclesInteractor) Handle(requestMessage *request.ListMotorcyclesRequest) (*response.ListMotorcyclesResponse, error) {
 	// Verify that the user has been properly authenticated.
 	if !interactor.AuthService.IsAuthenticated() {
-		return response.NewListMotorcyclesResponse(nil, errors.New("list operation failed due to not being authenticated"))
+		return response.NewListMotorcyclesResponse(nil, operationstatus.NotAuthenticated, errors.New("list operation failed due to not being authenticated"))
 	}
 
 	// Verify that the user has the necessary authorizations.
 	if !interactor.AuthService.IsAuthorized(authorizationrole.AdminAuthorizationRole) {
-		return response.NewListMotorcyclesResponse(nil, errors.New("list operation failed due to not being authorized, so please contact your system administrator"))
+		return response.NewListMotorcyclesResponse(nil, operationstatus.NotAuthorized, errors.New("list operation failed due to not being authorized, so please contact your system administrator"))
 	}
 
 	// Get the list of motorcycles from the repository.
-	motorcycles, err := interactor.MotorcycleRepository.List()
+	motorcycles, status, err := interactor.MotorcycleRepository.List()
 	if err != nil {
-		return response.NewListMotorcyclesResponse(nil, err)
+		return response.NewListMotorcyclesResponse(nil, status, err)
 	}
 
 	// Return the successful response message.
-	return response.NewListMotorcyclesResponse(motorcycles, nil)
+	return response.NewListMotorcyclesResponse(motorcycles, operationstatus.Ok, nil)
 }

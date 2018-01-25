@@ -8,21 +8,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-// InsertMotorcycleResponse is a simple dto containing the response data from the InsertMotorcycleInteractor.
-type InsertMotorcycleResponse struct {
+// UpdateMotorcycleResponse is a simple dto containing the response data from the UpdateMotorcycleInteractor.
+type UpdateMotorcycleResponse struct {
+	// ID will be set to the value that was requested to be updated.
 	ID     typedef.ID                      `json:"id"`
 	Status operationstatus.OperationStatus `json:"operationStatus"`
 	Error  error                           `json:"error"`
 }
 
-// NewInsertMotorcycleResponse creates a new instance of a InsertMotorcycleResponse.
-// Returns (nil, error) when there is an error, otherwise (InsertMotorcycleResponse, nil).
-func NewInsertMotorcycleResponse(id typedef.ID, status operationstatus.OperationStatus, err error) (*InsertMotorcycleResponse, error) {
+// NewUpdateMotorcycleResponse creates a new instance of a UpdateMotorcycleResponse.
+// Returns (nil, error) when there is an error, otherwise (UpdateMotorcycleResponse, nil).
+func NewUpdateMotorcycleResponse(id typedef.ID, status operationstatus.OperationStatus, err error) (*UpdateMotorcycleResponse, error) {
 
 	// We return a (nil, error) only when validation of the response message fails, not for whether the
 	// response message indicates failure.
 
-	motorcycleResponse := &InsertMotorcycleResponse{
+	motorcycleResponse := &UpdateMotorcycleResponse{
 		ID:     id,
 		Status: status,
 		Error:  err,
@@ -49,10 +50,10 @@ func NewInsertMotorcycleResponse(id typedef.ID, status operationstatus.Operation
 	return motorcycleResponse, nil
 }
 
-// Validate verifies that a InsertMotorcycleResponse's fields contain valid data.
-// Returns nil if the InsertMotorcycleResponse contains valid data, otherwise an error.
-func (response InsertMotorcycleResponse) Validate() error {
+// Validate verifies that a UpdateMotorcycleResponse's fields contain valid data.
+// Returns nil if the UpdateMotorcycleResponse contains valid data, otherwise an error.
+func (response UpdateMotorcycleResponse) Validate() error {
 	return validation.ValidateStruct(&response,
 		// ID is required and it must be non-zero
-		validation.Field(&response.ID, validation.Required))
+		validation.Field(&response.ID, validation.Required, validation.Min(1)))
 }

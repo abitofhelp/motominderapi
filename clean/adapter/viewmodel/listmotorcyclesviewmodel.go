@@ -2,7 +2,7 @@
 package viewmodel
 
 import (
-	"github.com/abitofhelp/motominderapi/clean/adapter/gateway/api/dto"
+	"github.com/abitofhelp/motominderapi/clean/adapter/dto"
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
 	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	"github.com/go-ozzo/ozzo-validation"
@@ -12,19 +12,19 @@ import (
 // ListMotorcyclesViewModel translates a ListMotorcyclesResponse to a ListMotorcyclesViewModel.
 // by the Configuration ring.
 type ListMotorcyclesViewModel struct {
-	Motorcycles []dto.MotorcycleDto `json:"motorcycles"`
-	Message     string              `json:"message"`
-	Error       error               `json:"error"`
+	Motorcycles []dto.ImmutableMotorcycleDto `json:"motorcycles"`
+	Message     string                       `json:"message"`
+	Error       error                        `json:"error"`
 }
 
 // NewListMotorcyclesViewModel creates a new instance of a ListMotorcyclesViewModel.
 // Returns an (instance of ListMotorcyclesViewModel, nil) on success, otherwise (nil, error)
 func NewListMotorcyclesViewModel(motorcycles []entity.Motorcycle, message string, err error) (*ListMotorcyclesViewModel, error) {
 	// Ensure that we create an empty slice rather than the default for []entity.Motorcycle, which is a null pointer.
-	motorcycleDtos := make([]dto.MotorcycleDto, 0)
+	motorcycleDtos := make([]dto.ImmutableMotorcycleDto, 0)
 
 	for i := 0; i < len(motorcycles); i++ {
-		motorcycle := &dto.MotorcycleDto{
+		motorcycle := &dto.ImmutableMotorcycleDto{
 			ID:          motorcycles[i].ID,
 			Make:        motorcycles[i].Make,
 			Model:       motorcycles[i].Model,

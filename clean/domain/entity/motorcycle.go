@@ -28,7 +28,7 @@ type Motorcycle struct {
 // Validate implemented Entity.Validate().  It verifies that a motorcycle's fields contain valid data that satisfies enterprise's common business rules.
 // Returns nil if the motorcycle contains valid data, otherwise an error.
 func (m Motorcycle) Validate() error {
-	err := validation.ValidateStruct(&m,
+	return validation.ValidateStruct(&m,
 		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)
 		validation.Field(&m.Make, validation.Required, validation.Length(constant.MinMakeLength, constant.MaxMakeLength), validation.By(IsInvalidManufacturer)),
 		// Model cannot be nil, cannot be empty, and max length of 20
@@ -38,12 +38,6 @@ func (m Motorcycle) Validate() error {
 		// Vin cannot be nil, cannot be empty, and has a length of 17
 		validation.Field(&m.Vin, validation.Required, validation.By(Is17Characters)),
 	)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // IsInvalidManufacturer verifies that a motorcycle's make is not an invalid manufacturer.

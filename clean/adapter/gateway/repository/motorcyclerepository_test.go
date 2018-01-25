@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,9 +44,10 @@ func TestMotorcycleRepository_Insert(t *testing.T) {
 	motorcycle, _ := entity.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 
 	// ACT
-	moto, _ := repo.Insert(motorcycle)
+	moto, status, _ := repo.Insert(motorcycle)
 
 	// ASSERT
+	assert.True(t, status == operationstatus.Ok)
 	assert.True(t, len(repo.Motorcycles) == 1)
 	assert.True(t, *moto == repo.Motorcycles[0])
 }
@@ -58,8 +60,8 @@ func TestMotorcycleRepository_Insert_IDAlreadyExists(t *testing.T) {
 	motorcycle, _ := entity.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
 
 	// ACT
-	moto, err := repo.Insert(motorcycle)
-	_, err = repo.Insert(moto)
+	moto, _, _ := repo.Insert(motorcycle)
+	_, _, err := repo.Insert(moto)
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -71,10 +73,10 @@ func TestMotorcycleRepository_FindByID(t *testing.T) {
 	// ARRANGE
 	repo, _ := NewMotorcycleRepository()
 	motorcycle, _ := entity.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
-	moto, _ := repo.Insert(motorcycle)
+	moto, _, _ := repo.Insert(motorcycle)
 
 	// ACT
-	foundMoto, _ := repo.FindByID(moto.ID)
+	foundMoto, _, _ := repo.FindByID(moto.ID)
 
 	// ASSERT
 	assert.True(t, moto.ID == foundMoto.ID)
@@ -87,7 +89,7 @@ func TestMotorcycleRepository_FindByID_NotExist(t *testing.T) {
 	repo, _ := NewMotorcycleRepository()
 
 	// ACT
-	foundMoto, _ := repo.FindByID(123)
+	foundMoto, _, _ := repo.FindByID(123)
 
 	// ASSERT
 	assert.Nil(t, foundMoto)
@@ -99,10 +101,10 @@ func TestMotorcycleRepository_FindByVin(t *testing.T) {
 	// ARRANGE
 	repo, _ := NewMotorcycleRepository()
 	motorcycle, _ := entity.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
-	moto, _ := repo.Insert(motorcycle)
+	moto, _, _ := repo.Insert(motorcycle)
 
 	// ACT
-	foundMoto, _ := repo.FindByVin(moto.Vin)
+	foundMoto, _, _ := repo.FindByVin(moto.Vin)
 
 	// ASSERT
 	assert.True(t, moto.Vin == foundMoto.Vin)
@@ -115,7 +117,7 @@ func TestMotorcycleRepository_FindByVin_NotExist(t *testing.T) {
 	repo, _ := NewMotorcycleRepository()
 
 	// ACT
-	foundMoto, _ := repo.FindByVin("99999999999999999")
+	foundMoto, _, _ := repo.FindByVin("99999999999999999")
 
 	// ASSERT
 	assert.Nil(t, foundMoto)
@@ -127,11 +129,11 @@ func TestMotorcycleRepository_Update(t *testing.T) {
 	// ARRANGE
 	repo, _ := NewMotorcycleRepository()
 	motorcycle, _ := entity.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
-	moto, _ := repo.Insert(motorcycle)
+	moto, _, _ := repo.Insert(motorcycle)
 	moto.Make = "Harley Davidson"
 
 	// ACT
-	repo.Update(moto)
+	repo.Update(moto.ID, moto)
 
 	// ASSERT
 	assert.True(t, repo.Motorcycles[0].Make == "Harley Davidson")
@@ -147,7 +149,7 @@ func TestMotorcycleRepository_Update_NotExist(t *testing.T) {
 	motorcycle.ID = 123
 
 	// ACT
-	foundMoto, _ := repo.Update(motorcycle)
+	foundMoto, _, _ := repo.Update(motorcycle.ID, motorcycle)
 
 	// ASSERT
 	assert.Nil(t, foundMoto)
@@ -159,7 +161,7 @@ func TestMotorcycleRepository_Delete(t *testing.T) {
 	// ARRANGE
 	repo, _ := NewMotorcycleRepository()
 	motorcycle, _ := entity.NewMotorcycle("Honda", "Shadow", 2006, "01234567890123456")
-	moto, _ := repo.Insert(motorcycle)
+	moto, _, _ := repo.Insert(motorcycle)
 
 	// ACT
 	repo.Delete(moto.ID)
@@ -178,7 +180,7 @@ func TestMotorcycleRepository_Delete_NotExist(t *testing.T) {
 	motorcycle.ID = 123
 
 	// ACT
-	err := repo.Delete(motorcycle.ID)
+	_, err := repo.Delete(motorcycle.ID)
 
 	// ASSERT
 	assert.NotNil(t, err)
@@ -191,7 +193,7 @@ func TestMotorcycleRepository_Save(t *testing.T) {
 	repo, _ := NewMotorcycleRepository()
 
 	// ACT
-	err := repo.Save()
+	_, err := repo.Save()
 
 	// ASSERT
 	assert.Nil(t, err)

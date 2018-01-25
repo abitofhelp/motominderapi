@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// MotorcycleDto contains the motorcycle data that will be returned to a client.
-type MotorcycleDto struct {
+// ImmutableMotorcycleDto contains read-only motorcycle information.
+type ImmutableMotorcycleDto struct {
 	ID          typedef.ID `json:"id"`
 	Make        string     `json:"make"`
 	Model       string     `json:"model"`

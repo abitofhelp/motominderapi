@@ -3,6 +3,7 @@ package response
 
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
+	"github.com/abitofhelp/motominderapi/clean/domain/enumeration/operationstatus"
 	"github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 )
@@ -10,18 +11,20 @@ import (
 // ListMotorcyclesResponse is a simple dto containing the response data from the ListMotorcyclesInteractor.
 type ListMotorcyclesResponse struct {
 	Motorcycles []entity.Motorcycle
-	Error       error `json:"error"`
+	Status      operationstatus.OperationStatus `json:"operationStatus"`
+	Error       error                           `json:"error"`
 }
 
 // NewListMotorcyclesResponse creates a new instance of a ListMotorcyclesResponse.
 // Returns (nil, error) when there is an error, otherwise (ListMotorcyclesResponse, nil).
-func NewListMotorcyclesResponse(motorcycles []entity.Motorcycle, err error) (*ListMotorcyclesResponse, error) {
+func NewListMotorcyclesResponse(motorcycles []entity.Motorcycle, status operationstatus.OperationStatus, err error) (*ListMotorcyclesResponse, error) {
 
 	// We return a (nil, error) only when validation of the response message fails, not for whether the
 	// response message indicates failure.
 
 	motorcycleResponse := &ListMotorcyclesResponse{
 		Motorcycles: motorcycles,
+		Status:      status,
 		Error:       err,
 	}
 

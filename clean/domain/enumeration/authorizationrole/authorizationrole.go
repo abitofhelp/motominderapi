@@ -1,10 +1,13 @@
-// Package authorizationrole defines enumerations for the application.
+// Package authorizationrole defines authorization roles for the application.
 package authorizationrole
 
 // AuthorizationRole is an authorization given to an authenticated user to access a resource.
 type AuthorizationRole int
 
+// The list of valid authorization role values.
 const (
+	// UndefinedAuthorizationRole is when an authorization role has not been assigned.
+	UndefinedAuthorizationRole = 0
 	// NoAuthorizationRole is when the user does not require any authorization roles to access resources.
 	NoAuthorizationRole = iota
 	// AdminAuthorizationRole is a user with authorization to access administrative resources.
@@ -15,20 +18,16 @@ const (
 	GeneralAuthorizationRole
 )
 
-// Admin provides a useful string for the value.
-// Returns a string for the Admin constant.
-func (AuthorizationRole) Admin() string {
-	return "Admin"
+// descriptions are the textual message for each authorization role value.
+var descriptions = [...]string{
+	"Undefined",
+	"None",
+	"Admin",
+	"Accounting",
+	"General",
 }
 
-// Accounting provides a useful string for the value.
-// Returns a string for the Accounting constant.
-func (AuthorizationRole) Accounting() string {
-	return "Accounting"
-}
-
-// General provides a useful string for the value.
-// Returns a string for the General constant.
-func (AuthorizationRole) General() string {
-	return "General"
+// ToString provides a description for the authorization role value.
+func (role AuthorizationRole) ToString() string {
+	return descriptions[role-1]
 }

@@ -19,29 +19,30 @@ import (
 
 /*
 TITLE
-Delete an existing motorcycle from the motorcycle repository.
+Update an existing motorcycle in the motorcycle repository.
 
 DESCRIPTION
-User accesses the system to delete motorcycles.
+User accesses the system to update a motorcycle.
 
 PRIMARY ACTOR
 User
 
 PRECONDITIONS
 User is logged into system.
-User possesses the necessary security authorizations to delete a motorcycle.
+User possesses the necessary security authorizations to update a motorcycle.
 A Motorcycle with the ID exists in the repository.
 The network and configuration is working properly.
 
 POSTCONDITIONS
-User has deleted a motorcycle from the system, unless it didn't exist.
+User has updated a motorcycle in the system, unless it didn't exist.
 
 MAIN SUCCESS SCENARIO
-1. User selects "Delete Motorcycle..." from the menu.
-2. System displays a view in which the user selects a motorcycle to delete.
-3. User click the "Submit" button.
-4. System deletes the motorcycle from the motorcycle repository, and displays a confirmation message.
-5. User clicks the "OK" button, and returns to the primary view.
+1. User selects "Update Motorcycle..." in the menu.
+2. System displays a view in which the user selects a motorcycle to update.
+3. User changes the required information for the motorcycle.
+4. User click the "Submit" button.
+5. System updates the motorcycle in the motorcycle repository, and displays a confirmation message.
+6. User clicks the "OK" button, and returns to the primary view.
 
 EXTENSIONS
 (3a) The user cannot log into the system.
@@ -49,9 +50,9 @@ EXTENSIONS
 	   and provides suggestions for resolving the issue.  The User clicks the
 	   "OK" button, and returns to the login view.
 
-(3b) The user does not possess the required authorization to delete a motorcycle.
+(3b) The user does not possess the required authorization to update a motorcycle.
        System displays an error message saying that the user does possess the required
-	   security authorizations to delete a motorcycles.  It recommends contacting the
+	   security authorizations to update a motorcycle.  It recommends contacting the
 	   System Administrator.  The User clicks the "OK" button, and returns to the
 	   primary view.
 
@@ -61,17 +62,17 @@ EXTENSIONS
 	   returns to the primary view.
 */
 
-// DeleteMotorcycleInteractor is a use case for deleting a motorcycle from the motorcycle repository.
-type DeleteMotorcycleInteractor struct {
+// UpdateMotorcycleInteractor is a use case for updating a motorcycle in the motorcycle repository.
+type UpdateMotorcycleInteractor struct {
 	MotorcycleRepository contract.MotorcycleRepository
 	AuthService          contract.AuthService
 }
 
-// NewDeleteMotorcycleInteractor creates a new instance of a DeleteMotorcycleInteractor.
-// Returns (nil, error) when there is an error, otherwise (DeleteMotorcycleInteractor, nil).
-func NewDeleteMotorcycleInteractor(motorcycleRepository contract.MotorcycleRepository, authService contract.AuthService) (*DeleteMotorcycleInteractor, error) {
+// NewUpdateMotorcycleInteractor creates a new instance of a UpdateMotorcycleInteractor.
+// Returns (nil, error) when there is an error, otherwise (UpdateMotorcycleInteractor, nil).
+func NewUpdateMotorcycleInteractor(motorcycleRepository contract.MotorcycleRepository, authService contract.AuthService) (*UpdateMotorcycleInteractor, error) {
 
-	interactor := &DeleteMotorcycleInteractor{
+	interactor := &UpdateMotorcycleInteractor{
 		MotorcycleRepository: motorcycleRepository,
 		AuthService:          authService,
 	}
@@ -86,9 +87,9 @@ func NewDeleteMotorcycleInteractor(motorcycleRepository contract.MotorcycleRepos
 	return interactor, nil
 }
 
-// Validate verifies that a DeleteMotorcycleInteractor's fields contain valid data.
-// Returns nil if the DeleteMotorcycleInteractor contains valid data, otherwise an error.
-func (interactor DeleteMotorcycleInteractor) Validate() error {
+// Validate verifies that a UpdateMotorcycleInteractor's fields contain valid data.
+// Returns nil if the UpdateMotorcycleInteractor contains valid data, otherwise an error.
+func (interactor UpdateMotorcycleInteractor) Validate() error {
 	return validation.ValidateStruct(&interactor,
 		// MotorcycleRepository is required and cannot be null.
 		validation.Field(&interactor.MotorcycleRepository, validation.Required),
@@ -99,29 +100,29 @@ func (interactor DeleteMotorcycleInteractor) Validate() error {
 // Handle processes the request message and generates the response message.  It is performing the use case.
 // The request message is a dto containing the required data for completing the use case.
 // On success, the method returns the (response message, nil), otherwise (nil, error).
-func (interactor *DeleteMotorcycleInteractor) Handle(requestMessage *request.DeleteMotorcycleRequest) (*response.DeleteMotorcycleResponse, error) {
+func (interactor *UpdateMotorcycleInteractor) Handle(requestMessage *request.UpdateMotorcycleRequest) (*response.UpdateMotorcycleResponse, error) {
 	// Verify that the user has been properly authenticated.
 	if !interactor.AuthService.IsAuthenticated() {
-		return response.NewDeleteMotorcycleResponse(requestMessage.ID, operationstatus.NotAuthenticated, errors.New("delete operation failed due to not being authenticated"))
+		return response.NewUpdateMotorcycleResponse(requestMessage.ID, operationstatus.NotAuthenticated, errors.New("update operation failed due to not being authenticated"))
 	}
 
 	// Verify that the user has the necessary authorizations.
 	if !interactor.AuthService.IsAuthorized(authorizationrole.AdminAuthorizationRole) {
-		return response.NewDeleteMotorcycleResponse(requestMessage.ID, operationstatus.NotAuthorized, errors.New("delete operation failed due to not being authorized, so please contact your system administrator"))
+		return response.NewUpdateMotorcycleResponse(requestMessage.ID, operationstatus.NotAuthorized, errors.New("update operation failed due to not being authorized, so please contact your system administrator"))
 	}
 
-	// Delete the motorcycle with ID from the repository.
-	status, err := interactor.MotorcycleRepository.Delete(requestMessage.ID)
+	// Update the motorcycle in the repository.
+	_, status, err := interactor.MotorcycleRepository.Update(requestMessage.ID, requestMessage.Motorcycle)
 	if err != nil {
-		return response.NewDeleteMotorcycleResponse(requestMessage.ID, status, err)
+		return response.NewUpdateMotorcycleResponse(requestMessage.ID, status, err)
 	}
 
 	// Save the changes.
 	status, err = interactor.MotorcycleRepository.Save()
 	if err != nil {
-		return response.NewDeleteMotorcycleResponse(requestMessage.ID, status, err)
+		return response.NewUpdateMotorcycleResponse(requestMessage.ID, status, err)
 	}
 
 	// Return the successful response message.
-	return response.NewDeleteMotorcycleResponse(requestMessage.ID, operationstatus.Ok, nil)
+	return response.NewUpdateMotorcycleResponse(requestMessage.ID, operationstatus.Ok, nil)
 }
