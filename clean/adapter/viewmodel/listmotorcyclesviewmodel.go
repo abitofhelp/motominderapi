@@ -4,7 +4,6 @@ package viewmodel
 import (
 	"github.com/abitofhelp/motominderapi/clean/adapter/dto"
 	"github.com/abitofhelp/motominderapi/clean/domain/entity"
-	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	"github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 )
@@ -62,16 +61,6 @@ func NewListMotorcyclesViewModel(motorcycles []entity.Motorcycle, message string
 
 	// Otherwise, all okay
 	return viewModel, nil
-}
-
-// Handle performs the translation of the response message into a view model.
-// Returns (instance of InsertMotorcycleViewModel, nil) on success, otherwise (nil, error)
-func (viewmodel *ListMotorcyclesViewModel) Handle(responseMessage *response.ListMotorcyclesResponse) (*ListMotorcyclesViewModel, error) {
-	if responseMessage.Error != nil {
-		return NewListMotorcyclesViewModel(nil, responseMessage.Error.Error(), responseMessage.Error)
-	}
-
-	return NewListMotorcyclesViewModel(responseMessage.Motorcycles, "Successfully retrieved the list of motorcycles.", nil)
 }
 
 // Validate verifies that a ListMotorcyclesViewModel's fields contain valid data.

@@ -8,24 +8,24 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ListMotorcyclesResponse is a simple dto containing the response data from the ListMotorcyclesInteractor.
-type ListMotorcyclesResponse struct {
-	Motorcycles []entity.Motorcycle             `json:"motorcycles"`
-	Status      operationstatus.OperationStatus `json:"operationStatus"`
-	Error       error                           `json:"error"`
+// GetMotorcycleResponse is a simple dto containing the response data from the GetMotorcycleInteractor.
+type GetMotorcycleResponse struct {
+	Motorcycle *entity.Motorcycle              `json:"motorcycle"`
+	Status     operationstatus.OperationStatus `json:"operationStatus"`
+	Error      error                           `json:"error"`
 }
 
-// NewListMotorcyclesResponse creates a new instance of a ListMotorcyclesResponse.
-// Returns (nil, error) when there is an error, otherwise (ListMotorcyclesResponse, nil).
-func NewListMotorcyclesResponse(motorcycles []entity.Motorcycle, status operationstatus.OperationStatus, err error) (*ListMotorcyclesResponse, error) {
+// NewGetMotorcycleResponse creates a new instance of a GetMotorcycleResponse.
+// Returns (nil, error) when there is an error, otherwise (GetMotorcycleResponse, nil).
+func NewGetMotorcycleResponse(motorcycle *entity.Motorcycle, status operationstatus.OperationStatus, err error) (*GetMotorcycleResponse, error) {
 
 	// We return a (nil, error) only when validation of the response message fails, not for whether the
 	// response message indicates failure.
 
-	motorcycleResponse := &ListMotorcyclesResponse{
-		Motorcycles: motorcycles,
-		Status:      status,
-		Error:       err,
+	motorcycleResponse := &GetMotorcycleResponse{
+		Motorcycle: motorcycle,
+		Status:     status,
+		Error:      err,
 	}
 
 	msgErr := motorcycleResponse.Validate()
@@ -49,8 +49,8 @@ func NewListMotorcyclesResponse(motorcycles []entity.Motorcycle, status operatio
 	return motorcycleResponse, nil
 }
 
-// Validate verifies that a ListMotorcyclesResponse's fields contain valid data.
-// Returns nil if the ListMotorcyclesResponse contains valid data, otherwise an error.
-func (response ListMotorcyclesResponse) Validate() error {
+// Validate verifies that a GetMotorcycleResponse's fields contain valid data.
+// Returns nil if the GetMotorcycleResponse contains valid data, otherwise an error.
+func (response GetMotorcycleResponse) Validate() error {
 	return validation.ValidateStruct(&response)
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
 	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
-	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	"github.com/go-ozzo/ozzo-validation"
 )
 
@@ -46,16 +45,6 @@ func NewDeleteMotorcycleViewModel(id typedef.ID, message string, err error) (*De
 
 	// Otherwise, all okay
 	return viewModel, nil
-}
-
-// Handle performs the translation of the response message into a view model.
-// Returns (instance of DeleteMotorcycleViewModel, nil) on success, otherwise (nil, error)
-func (viewmodel *DeleteMotorcycleViewModel) Handle(responseMessage *response.DeleteMotorcycleResponse) (*DeleteMotorcycleViewModel, error) {
-	if responseMessage.Error != nil {
-		return NewDeleteMotorcycleViewModel(constant.InvalidEntityID, responseMessage.Error.Error(), responseMessage.Error)
-	}
-
-	return NewDeleteMotorcycleViewModel(responseMessage.ID, "Successfully deleted the motorcycle.", nil)
 }
 
 // Validate verifies that a DeleteMotorcycleViewModel's fields contain valid data.

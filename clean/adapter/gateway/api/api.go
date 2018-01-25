@@ -77,6 +77,9 @@ func (api *Api) configureRouter() error {
 	// Set up the handler to get a list of motorcycles from the repository.
 	api.Router.GET("/api/motorcycles", api.ListMotorcyclesHandler)
 
+	// Set up the handler to get a particular motorcycle from the repository.
+	api.Router.GET("/api/motorcycles/:id", api.GetMotorcycleHandler)
+
 	// Set up the handler to insert a new motorcycle into the repository.
 	api.Router.POST("/api/motorcycles", api.InsertMotorcycleHandler)
 
@@ -144,7 +147,7 @@ func (api *Api) ListMotorcyclesHandler(w http.ResponseWriter, r *http.Request, _
 		return
 	}
 
-	// Marshal provided contract into JSON structure
+	// Marshal provided viewModel into JSON structure
 	uj, err := json.Marshal(viewModel)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -158,7 +161,67 @@ func (api *Api) ListMotorcyclesHandler(w http.ResponseWriter, r *http.Request, _
 	fmt.Fprintf(w, "%s", uj)
 }
 
-// DeleteMotorcycleHandler removes a motorcycle from the respository.
+// GetMotorcycleHandler gets a particular motorcycle from the repository.
+func (api *Api) GetMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+
+	id, err := strconv.Atoi(p.ByName("id"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithError(err)
+		return
+	}
+
+	// Create the motorcycleRequest, process it, and get the resulting view model or error.
+	getRequest, err := request.NewGetMotorcycleRequest(typedef.ID(id))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithError(err)
+		return
+	}
+
+	getInteractor, err := interactor.NewGetMotorcycleInteractor(api.MotorcycleRepository, api.AuthService)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.WithError(err)
+		return
+	}
+
+	getResponse, err := getInteractor.Handle(getRequest)
+	if err != nil {
+		w.WriteHeader(int(getResponse.Status))
+		log.WithError(err)
+		return
+	}
+
+	getPresenter, err := presenter.NewGetMotorcyclePresenter()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.WithError(err)
+		return
+	}
+
+	viewModel, err := getPresenter.Handle(getResponse)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.WithError(err)
+		return
+	}
+
+	// Marshal provided viewModel into JSON structure
+	uj, err := json.Marshal(viewModel)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.WithError(err)
+		return
+	}
+
+	// Write content-type, status code, payload
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%s", uj)
+}
+
+// `MotorcycleHandler removes a motorcycle from the repository.
 func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id, err := strconv.Atoi(p.ByName("id"))
@@ -204,7 +267,7 @@ func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	// Marshal provided contract into JSON structure
+	// Marshal provided viewModel into JSON structure
 	_, err = json.Marshal(viewModel)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -269,7 +332,7 @@ func (api *Api) UpdateMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	// Marshal provided contract into JSON structure
+	// Marshal provided viewModel into JSON structure
 	_, err = json.Marshal(viewModel)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -326,7 +389,7 @@ func (api *Api) InsertMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	// Marshal provided contract into JSON structure
+	// Marshal provided viewModel into JSON structure
 	uj, err := json.Marshal(viewModel)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

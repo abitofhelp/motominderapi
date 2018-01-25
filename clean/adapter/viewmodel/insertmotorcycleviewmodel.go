@@ -4,7 +4,6 @@ package viewmodel
 import (
 	"github.com/abitofhelp/motominderapi/clean/domain/constant"
 	"github.com/abitofhelp/motominderapi/clean/domain/typedef"
-	"github.com/abitofhelp/motominderapi/clean/usecase/response"
 	"github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 )
@@ -45,16 +44,6 @@ func NewInsertMotorcycleViewModel(id typedef.ID, message string, err error) (*In
 
 	// Otherwise, all okay
 	return viewModel, nil
-}
-
-// Handle performs the translation of the response message into a view model.
-// Returns (instance of InsertMotorcycleViewModel, nil) on success, otherwise (nil, error)
-func (viewmodel *InsertMotorcycleViewModel) Handle(responseMessage *response.InsertMotorcycleResponse) (*InsertMotorcycleViewModel, error) {
-	if responseMessage.Error != nil {
-		return NewInsertMotorcycleViewModel(constant.InvalidEntityID, responseMessage.Error.Error(), responseMessage.Error)
-	}
-
-	return NewInsertMotorcycleViewModel(responseMessage.ID, "Successfully inserted a new motorcycle.", nil)
 }
 
 // Validate verifies that a InsertMotorcycleViewModel's fields contain valid data.
