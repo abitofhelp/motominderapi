@@ -221,7 +221,7 @@ func (api *Api) GetMotorcycleHandler(w http.ResponseWriter, r *http.Request, p h
 	fmt.Fprintf(w, "%s", uj)
 }
 
-// DeleteMotorcycleHandler removes a motorcycle from the repository.
+// DelMotorcycleHandler removes a motorcycle from the repository.
 func (api *Api) DelMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id, err := strconv.Atoi(p.ByName("id"))
@@ -279,7 +279,7 @@ func (api *Api) DelMotorcycleHandler(w http.ResponseWriter, r *http.Request, p h
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// UpdateMotorcycleHandler updates an existing motorcycle in the repository.
+// PutMotorcycleHandler updates an existing motorcycle in the repository.
 func (api *Api) PutMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id, err := strconv.Atoi(p.ByName("id"))
@@ -343,7 +343,7 @@ func (api *Api) PutMotorcycleHandler(w http.ResponseWriter, r *http.Request, p h
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// InsertMotorcycleHandler adds a new motorcycle to the repository.
+// PostMotorcycleHandler adds a new motorcycle to the repository.
 func (api *Api) PostMotorcycleHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	// Stub a motorcycle to be populated from the body of the motorcycleRequest.
