@@ -18,8 +18,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestApi_DeleteMotorcycle verifies a successful response after inserting a motorcycle.
-func TestApi_DeleteMotorcycle(t *testing.T) {
+// TestApi_DelMotorcycle verifies a successful response after inserting a motorcycle.
+func TestApi_DelMotorcycle(t *testing.T) {
 
 	// ARRANGE
 
@@ -48,22 +48,22 @@ func TestApi_DeleteMotorcycle(t *testing.T) {
 	json.NewDecoder(insertResponse.Body).Decode(&insertionViewModel)
 
 	// ACT
-	resp, err := DeleteMotorcycle(ourApi, insertionViewModel.ID)
+	resp, err := DelMotorcycle(ourApi, insertionViewModel.ID)
 
 	// ASSERT
 	assert.True(t, resp.StatusCode == 204)
 }
 
-// DeleteMotorcycle deletes a motorcycle from the repository using the RESTful API.
+// DelMotorcycle deletes a motorcycle from the repository using the RESTful API.
 // Returns (*response, nil) on success, otherwise (nil, error).
-func DeleteMotorcycle(ourApi *Api, id typedef.ID) (*http.Response, error) {
+func DelMotorcycle(ourApi *Api, id typedef.ID) (*http.Response, error) {
 
 	idText := strconv.Itoa(int(id))
 
 	// An http handler wrapper around httprouter's handler.  It permits us to use
 	// the test server.
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ourApi.DeleteMotorcycleHandler(w, r, httprouter.Params{httprouter.Param{
+		ourApi.DelMotorcycleHandler(w, r, httprouter.Params{httprouter.Param{
 			Key:   "id",
 			Value: idText,
 		}})

@@ -56,7 +56,7 @@ func InsertMotorcycle(ourApi *Api, motorcycle *entity.Motorcycle) (*http.Respons
 	// An http handler wrapper around httprouter's handler.  It permits us to use
 	// the test server.
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ourApi.InsertMotorcycleHandler(w, r, httprouter.Params{})
+		ourApi.PostMotorcycleHandler(w, r, httprouter.Params{})
 	})
 
 	server := httptest.NewServer(handler)

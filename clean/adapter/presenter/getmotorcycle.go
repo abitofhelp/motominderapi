@@ -30,7 +30,7 @@ func (presenter *GetMotorcyclePresenter) Handle(responseMessage *response.GetMot
 		return viewmodel.NewGetMotorcycleViewModel(nil, "Failed to get the motorcycle.", responseMessage.Error)
 	}
 
-	motorcycleDto, err := dto.NewImmutableMotorcycleDto(*responseMessage.Motorcycle)
+	motorcycleDto, err := dto.NewMotorcycleDto(*responseMessage.Motorcycle)
 	if err != nil {
 		return viewmodel.NewGetMotorcycleViewModel(nil, "Failed to create an immutable motorcycle.", err)
 	}

@@ -69,7 +69,7 @@ func UpdateMotorcycle(ourApi *Api, id typedef.ID, motorcycle entity.Motorcycle) 
 	// An http handler wrapper around httprouter's handler.  It permits us to use
 	// the test server.
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ourApi.DeleteMotorcycleHandler(w, r, httprouter.Params{httprouter.Param{
+		ourApi.DelMotorcycleHandler(w, r, httprouter.Params{httprouter.Param{
 			Key:   "id",
 			Value: idText,
 		}})

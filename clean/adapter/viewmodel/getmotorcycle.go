@@ -10,14 +10,14 @@ import (
 // GetMotorcycleViewModel translates a GetMotorcycleResponse to a GetMotorcycleViewModel.
 // by the Configuration ring.
 type GetMotorcycleViewModel struct {
-	Motorcycle *dto.ImmutableMotorcycleDto `json:"motorcycle"`
-	Message    string                      `json:"message"`
-	Error      error                       `json:"error"`
+	Motorcycle *dto.MotorcycleDto `json:"motorcycle"`
+	Message    string             `json:"message"`
+	Error      error              `json:"error"`
 }
 
 // NewGetMotorcycleViewModel creates a new instance of a GetMotorcycleViewModel.
 // Returns an (instance of GetMotorcycleViewModel, nil) on success, otherwise (nil, error)
-func NewGetMotorcycleViewModel(motorcycle *dto.ImmutableMotorcycleDto, message string, err error) (*GetMotorcycleViewModel, error) {
+func NewGetMotorcycleViewModel(motorcycle *dto.MotorcycleDto, message string, err error) (*GetMotorcycleViewModel, error) {
 
 	viewModel := &GetMotorcycleViewModel{
 		Motorcycle: motorcycle,

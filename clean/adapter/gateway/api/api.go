@@ -81,13 +81,13 @@ func (api *Api) configureRouter() error {
 	api.Router.GET("/api/motorcycles/:id", api.GetMotorcycleHandler)
 
 	// Set up the handler to insert a new motorcycle into the repository.
-	api.Router.POST("/api/motorcycles", api.InsertMotorcycleHandler)
+	api.Router.POST("/api/motorcycles", api.PostMotorcycleHandler)
 
 	// Set up the handler to update a motorcycle in the repository.
-	api.Router.PUT("/api/motorcycles/:id", api.UpdateMotorcycleHandler)
+	api.Router.PUT("/api/motorcycles/:id", api.PutMotorcycleHandler)
 
 	// Set up the handler to delete a motorcycle from the repository.
-	api.Router.DELETE("/api/motorcycles/:id", api.DeleteMotorcycleHandler)
+	api.Router.DELETE("/api/motorcycles/:id", api.DelMotorcycleHandler)
 
 	return nil
 }
@@ -222,7 +222,7 @@ func (api *Api) GetMotorcycleHandler(w http.ResponseWriter, r *http.Request, p h
 }
 
 // DeleteMotorcycleHandler removes a motorcycle from the repository.
-func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (api *Api) DelMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id, err := strconv.Atoi(p.ByName("id"))
 	if err != nil {
@@ -280,7 +280,7 @@ func (api *Api) DeleteMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 }
 
 // UpdateMotorcycleHandler updates an existing motorcycle in the repository.
-func (api *Api) UpdateMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (api *Api) PutMotorcycleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	id, err := strconv.Atoi(p.ByName("id"))
 	if err != nil {
@@ -344,10 +344,10 @@ func (api *Api) UpdateMotorcycleHandler(w http.ResponseWriter, r *http.Request, 
 }
 
 // InsertMotorcycleHandler adds a new motorcycle to the repository.
-func (api *Api) InsertMotorcycleHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (api *Api) PostMotorcycleHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	// Stub a motorcycle to be populated from the body of the motorcycleRequest.
-	motorcycleDto := dto.MutableMotorcycleDto{}
+	motorcycleDto := dto.TerseMotorcycleDto{}
 
 	// Populate the motorcycle from the motorcycleRequest body.
 	json.NewDecoder(r.Body).Decode(&motorcycleDto)

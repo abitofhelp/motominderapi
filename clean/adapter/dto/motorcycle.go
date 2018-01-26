@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// ImmutableMotorcycleDto contains read-only motorcycle information.
-type ImmutableMotorcycleDto struct {
+// MotorcycleDto contains motorcycle information.
+type MotorcycleDto struct {
 	ID          typedef.ID `json:"id"`
 	Make        string     `json:"make"`
 	Model       string     `json:"model"`
@@ -20,8 +20,8 @@ type ImmutableMotorcycleDto struct {
 	ModifiedUtc time.Time  `json:"modifiedUtc"`
 }
 
-func NewImmutableMotorcycleDto(motorcycle entity.Motorcycle) (*ImmutableMotorcycleDto, error) {
-	moto := &ImmutableMotorcycleDto{
+func NewMotorcycleDto(motorcycle entity.Motorcycle) (*MotorcycleDto, error) {
+	moto := &MotorcycleDto{
 		ID:          motorcycle.ID,
 		Make:        motorcycle.Make,
 		Model:       motorcycle.Model,
@@ -41,7 +41,7 @@ func NewImmutableMotorcycleDto(motorcycle entity.Motorcycle) (*ImmutableMotorcyc
 
 // Validate implemented Entity.Validate().  It verifies that a motorcycle's fields contain valid data that satisfies enterprise's common business rules.
 // Returns nil if the motorcycle contains valid data, otherwise an error.
-func (m ImmutableMotorcycleDto) Validate() error {
+func (m MotorcycleDto) Validate() error {
 	return validation.ValidateStruct(&m,
 		// Make cannot be nil, cannot be empty, max length of 20, and not Ford (case insensitive)
 		validation.Field(&m.Make, validation.Required, validation.Length(constant.MinMakeLength, constant.MaxMakeLength), validation.By(entity.IsInvalidManufacturer)),
