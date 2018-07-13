@@ -1,5 +1,6 @@
 # motominder API
 
 # Background
-Motominderapi is a web service that I created in Go as a template for other projects.  It implements a RESTful API for manipulating a repository of motorcycles.  The RESTful endpoints use JSON.  
+Motominderapi will be a RESTful API for manipulating a repository of motorcycles.  It is implemented in GO using a Clean Architecture and TDD.
 
+This project is continuing to evolve.  The next step is to implement the web service, which is an outer ring of the Clean Architecture model.  The final step will be to persist to a database.  At this time, persistance is to a file, but it will be an easy matter to change this mechanism.
